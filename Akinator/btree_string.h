@@ -4,9 +4,9 @@
 #define LEFT_CHILD 1
 #define RIGHT_CHILD 2
 
-const int strMaxSize = 10000;
+const int treeStrMaxSize = 101;
 
-typedef char value_t[strMaxSize];
+typedef char value_t[treeStrMaxSize];
 
 struct node_t {
 	value_t value = {};
@@ -249,13 +249,16 @@ int ShowTree(tree_t* tree);
 *	Создает код по дереву
 *
 *	@param[in] tree Дерево
-*	@param[out] str Буфер
+*	@param[out] size Длина полученного кода (без учета '\0').\
+ Если значение отрицательное, то возникла следующая ошибка:\
+ -1 - на вход подалось дерево с ошибкой (только в режиме отладки);\
+ -2 -проблема при создании буфера; 0 - все прошло нормально
 *
-*	@return 1 - на вход подалось дерево с ошибкой (только в режиме отладки);\
- 0 - все прошло нормально
+*	@return Указатель на буфер с кодом. В случае ошибки равен NULL.\
+ Не забудьте освободить память по этому указателю!
 */
 
-int TreeToCode(tree_t* tree, char* str);
+char* TreeToCode(tree_t* tree, int* size = NULL);
 
 
 /**

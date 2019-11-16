@@ -62,11 +62,11 @@ int NodeChildsCount(node_t* node) {
 *	@return 0 - все прошло нормально
 */
 
-int CopyValue_t(value_t* dest, value_t* source) {
+int CopyValue_t(value_t dest, value_t source) {
 	assert(dest != NULL);
 	assert(source != NULL);
 
-	strcpy(*dest, *source);
+	strcpy(dest, source);
 
 	return 0;
 }
@@ -82,7 +82,7 @@ int CopyValue_t(value_t* dest, value_t* source) {
 
 char* Value_tToStr(const value_t value) {
 
-	const int value_tMaxStrSize = strMaxSize;
+	const int value_tMaxStrSize = treeStrMaxSize;
 
 	char* str = (char*)calloc(value_tMaxStrSize, sizeof(char));
 	strcpy(str, value);
@@ -393,10 +393,10 @@ tree_t TreeConstructor(const char* name) {
 *	@return 0 - все прошло нормально
 */
 
-int ChangeNodeValue(node_t* node, value_t* value) {
+int ChangeNodeValue(node_t* node, value_t value) {
 	assert(node != NULL);
 
-	CopyValue_t(&node->value, value);
+	CopyValue_t(node->value, value);
 
 	return 0;
 }
@@ -486,7 +486,9 @@ int AddChild(tree_t* tree, node_t* node, value_t value, const int side, node_t**
 
 	tree->size++;
 
-	*createdNode = newNode;
+	if (createdNode != NULL) {
+		*createdNode = newNode;
+	}
 
 #ifdef _DEBUG
 	if (TreeOk(tree)) {
@@ -828,7 +830,9 @@ int NodesToCode(node_t* node, buf_t* codeBuf) {
 	
 	if (NodeChildsCount(node) > 0) {
 		Bufcat(codeBuf, valueS);
+		free(valueS);
 		Bufcat(codeBuf, "{");
+
 		if (node->left != NULL) {
 			NodesToCode(node->left, codeBuf);
 		}
@@ -848,6 +852,7 @@ int NodesToCode(node_t* node, buf_t* codeBuf) {
 		Bufcat(codeBuf, "{");
 		Bufcat(codeBuf, valueS);
 		Bufcat(codeBuf, "}");
+		free(valueS);
 	}
 
 	return 0;
@@ -858,31 +863,50 @@ int NodesToCode(node_t* node, buf_t* codeBuf) {
 *	Создает код по дереву
 *
 *	@param[in] tree Дерево
-*	@param[out] str Буфер
+*	@param[out] size Длина полученного кода (без учета '\0').\
+ Если значение отрицательное, то возникла следующая ошибка:\
+ -1 - на вход подалось дерево с ошибкой (только в режиме отладки);\
+ -2 -проблема при создании буфера; 0 - все прошло нормально
 *
-*	@return 1 - на вход подалось дерево с ошибкой (только в режиме отладки);\
- 0 - все прошло нормально
+*	@return Указатель на буфер с кодом. В случае ошибки равен NULL.\
+ Не забудьте освободить память по этому указателю!
 */
 
-int TreeToCode(tree_t* tree, char* code) {
+char* TreeToCode(tree_t* tree, int* size) {
 	assert(tree != NULL);
-	assert(code != NULL);
 
 #ifdef _DEBUG
 	if (!TreeOk(tree)) {
 		PrintTree_NOK(*tree);
-		return 1;
+		if (size != NULL) {
+			*size = -1;
+		}
+		return NULL;
 	}
 #endif
 
-	buf_t codeBuf = {};
-	codeBuf.str = code;
+	int bufConstrErr = 0;
+	buf_t codeBuf = BufConstructor('w', &bufConstrErr);
+	if (bufConstrErr != 0) {
+		if (size != NULL) {
+			*size = -2;
+		}
+		return NULL;
+	}
 	
 	Bufcat(&codeBuf, "{");
 	NodesToCode(tree->root, &codeBuf);
 	Bufcat(&codeBuf, "}");
 
-	return 0;
+	char* res = (char*)calloc(codeBuf.lastChar + 2, sizeof(char));
+	strncpy(res, codeBuf.str, codeBuf.lastChar + 1);
+	if (size != NULL) {
+		*size = codeBuf.lastChar + 1;
+	}
+
+	BufDestructor(&codeBuf);
+
+	return res;
 }
 
 
@@ -903,7 +927,11 @@ int CodeToNodes(buf_t* buf, node_t*& node, int* size) {
 
 	char curCh = Bgetc(buf);
 	if (curCh == '{') {
-		if (Bgetc(buf) != '{') {
+		char nextCh = Bgetc(buf);
+		if (nextCh == EOB) {
+			return 1;
+		}
+		if (nextCh != '{') {
 			Bseek(buf, -1, BSEEK_CUR);
 		}
 
@@ -926,7 +954,7 @@ int CodeToNodes(buf_t* buf, node_t*& node, int* size) {
 
 			value_t value = {};
 			StrToValue_t(valueS, &value);
-			ChangeNodeValue(newNode, &value);
+			ChangeNodeValue(newNode, value);
 			if (node != NULL) {
 				node->left = newNode;
 			}
@@ -944,7 +972,11 @@ int CodeToNodes(buf_t* buf, node_t*& node, int* size) {
 		}
 	}
 	else if (curCh == ',') {
-		if (Bgetc(buf) != '{') {
+		char nextCh = Bgetc(buf);
+		if (nextCh == EOB) {
+			return 1;
+		}
+		if (nextCh != '{') {
 			Bseek(buf, -1, BSEEK_CUR);
 		}
 
@@ -967,7 +999,7 @@ int CodeToNodes(buf_t* buf, node_t*& node, int* size) {
 
 			value_t value = {};
 			StrToValue_t(valueS, &value);
-			ChangeNodeValue(newNode, &value);
+			ChangeNodeValue(newNode, value);
 			node->right = newNode;
 			newNode->parent = node;
 			(*size)++;
@@ -1034,13 +1066,19 @@ tree_t CodeToTree(char* code, const char* treeName, int* err) {
 	tree.size = 0;
 	int retErr = CodeToNodes(&codeBuf, tree.root, &tree.size);
 	
-	if (err != NULL) {
-		*err = 2;
+	if(retErr!=0){
+		if (err != NULL) {
+			*err = 2;
+		}
+		return tree;
 	}
 
 #ifdef _DEBUG
 	if (!TreeOk(&tree)) {
-		*err = 2;
+		if (err != NULL) {
+			*err = 2;
+		}
+		return tree;
 	}
 #endif
 
