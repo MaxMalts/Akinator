@@ -6,15 +6,15 @@
 #include "btree_string.h"
 
 #define ANSWER_YES 1
-#define ANSWER_NO 2
+#define ANSWER_NO 0
 
 
 /**
-*	Открывает файл с данными
+*	╬ЄъЁ√трхЄ Їрщы ё фрээ√ьш
 *
-*	@param[in] fName Имя файла
+*	@param[in] fName ╚ь  Їрщыр
 *
-*	@return Указатель на файл. В случае ошибки равен NULL.
+*	@return ╙ърчрЄхы№ эр Їрщы. ┬ ёыєўрх ю°шсъш Ёртхэ NULL.
 */
 
 FILE* GetDataFile(const char* fName) {
@@ -25,11 +25,11 @@ FILE* GetDataFile(const char* fName) {
 
 
 /**
-*	Определяет размер файла с учетом символа '\r'
+*	╬яЁхфхы хЄ ЁрчьхЁ Їрщыр ё єўхЄюь ёшьтюыр '\r'
 *
-*	@param[in] f Файл
+*	@param[in] f ╘рщы
 *
-*	@return Размер файла. Если размер отрицательный, то произошла ошибка
+*	@return ╨рчьхЁ Їрщыр. ┼ёыш ЁрчьхЁ юЄЁшЎрЄхы№э√щ, Єю яЁюшчю°ыр ю°шсър
 */
 
 int GetFileSize(FILE* f) {
@@ -49,12 +49,12 @@ int GetFileSize(FILE* f) {
 
 
 /**
-*	Создает дерево с данными из файла
+*	╤ючфрхЄ фхЁхтю ё фрээ√ьш шч Їрщыр
 *
-*	@param[in] dataFile Файл
-*	@param[out] err Код ошибки: 1 - неверный формат данных; 0 - все прошло нормально
+*	@param[in] dataFile ╘рщы
+*	@param[out] err ╩юф ю°шсъш: 1 - эхтхЁэ√щ ЇюЁьрЄ фрээ√ї; 0 - тёх яЁю°ыю эюЁьры№эю
 *
-*	@return Дерево с данными. В случае ошибки возвращается пустое дерево.
+*	@return ─хЁхтю ё фрээ√ьш. ┬ ёыєўрх ю°шсъш тючтЁр∙рхЄё  яєёЄюх фхЁхтю.
 */
 
 tree_t GetDataTree(FILE* dataFile, int* err = NULL) {
@@ -94,9 +94,9 @@ tree_t GetDataTree(FILE* dataFile, int* err = NULL) {
 
 
 /**
-*	Добивается, чтобы пользователь ввел "да" или "нет"
+*	─юсштрхЄё , ўЄюс√ яюы№чютрЄхы№ ттхы "фр" шыш "эхЄ"
 *
-*	@return ANSWER_YES - "да"; ANSWER_NO - "нет"
+*	@return ANSWER_YES - "фр"; ANSWER_NO - "эхЄ"
 */
 
 int GetYesOrNo() {
@@ -107,14 +107,14 @@ int GetYesOrNo() {
 		scanf("%3s", ans);
 		fseek(stdin, 0, SEEK_END);
 
-		if (strcmp(ans, "да") == 0) {
+		if (strcmp(ans, "фр") == 0) {
 			return ANSWER_YES;
 		}
-		else if (strcmp(ans, "нет") == 0) {
+		else if (strcmp(ans, "эхЄ") == 0) {
 			return ANSWER_NO;
 		}
 		else {
-			printf("Ответьте \"да\" или \"нет\".\n");
+			printf("╬ЄтхЄ№Єх \"фр\" шыш \"эхЄ\".\n");
 		}
 	}
 
@@ -122,22 +122,22 @@ int GetYesOrNo() {
 
 
 /**
-*	Отгадывает слово (рекурсивная)
+*	╬Єурф√трхЄ ёыютю (ЁхъєЁёштэр )
 *
-*	@param[in] curNode Текущий узел (при первичном вызове - корень дерева данных)
-*	@param[out] ansNode Узел, являющийся ответом
+*	@param[in] curNode ╥хъє∙шщ єчхы (яЁш яхЁтшўэюь т√чютх - ъюЁхэ№ фхЁхтр фрээ√ї)
+*	@param[out] ansNode ╙чхы,  ты ■∙шщё  юЄтхЄюь
 *
-*	@return 0 (false) - словов не отгадано; 1 (true) - слово отгадано
+*	@return 0 (false) - ёыютют эх юЄурфрэю; 1 (true) - ёыютю юЄурфрэю
 */
 
 int AkinatorCycle(node_t* curNode, node_t*& ansNode) {
 	assert(curNode!= NULL);
 
 	if (NodeChildsCount(curNode) == 0) {
-		printf("Это - %s!\n", curNode->value);
+		printf("▌Єю - %s!\n", curNode->value);
 		ansNode = curNode;
 
-		printf("Я угадал?\n");
+		printf("▀ єурфры?\n");
 
 		int ans = GetYesOrNo();
 
@@ -170,10 +170,10 @@ int AkinatorCycle(node_t* curNode, node_t*& ansNode) {
 
 
 /**
-*	Добивается от пользователя нового слова
+*	─юсштрхЄё  юЄ яюы№чютрЄхы  эютюую ёыютр
 *
-*	@param[out] newWord Новое слово
-*	@param[in] wordMaxSize Максимальная длина слова
+*	@param[out] newWord ═ютюх ёыютю
+*	@param[in] wordMaxSize ╠ръёшьры№эр  фышэр ёыютр
 */
 
 void GetNewWord(char* newWord, const int wordMaxSize) {
@@ -186,7 +186,7 @@ void GetNewWord(char* newWord, const int wordMaxSize) {
 		fseek(stdin, 0, SEEK_END);
 
 		if (newWord[wordMaxSize - 2] != '\0') {
-			printf("Слово слишком длинное. Введи более короткое слово (макс. %d символов):\n", \
+			printf("╤ыютю ёыш°ъюь фышээюх. ┬тхфш сюыхх ъюЁюЄъюх ёыютю (ьръё. %d ёшьтюыют):\n", \
 				wordMaxSize - 1);
 		}
 		else break;
@@ -195,10 +195,10 @@ void GetNewWord(char* newWord, const int wordMaxSize) {
 
 
 /**
-*	Добивается от пользователя нового вопроса
+*	─юсштрхЄё  юЄ яюы№чютрЄхы  эютюую тюяЁюёр
 *
-*	@param[out] newQuest Новый вопрос
-*	@param[in] questMaxSize Максимальная длина вопроса
+*	@param[out] newQuest ═ют√щ тюяЁюё
+*	@param[in] questMaxSize ╠ръёшьры№эр  фышэр тюяЁюёр
 */
 
 void GetNewQuestion(char* newQuest, const int questMaxSize) {
@@ -211,7 +211,7 @@ void GetNewQuestion(char* newQuest, const int questMaxSize) {
 		fseek(stdin, 0, SEEK_END);
 
 		if (newQuest[questMaxSize - 2] != '\0') {
-			printf("Вопрос слишком длинный. Введи более короткий вопрос (макс. %d символов):\n", \
+			printf("┬юяЁюё ёыш°ъюь фышээ√щ. ┬тхфш сюыхх ъюЁюЄъшщ тюяЁюё (ьръё. %d ёшьтюыют):\n", \
 				questMaxSize - 1);
 		}
 		else break;
@@ -220,17 +220,17 @@ void GetNewQuestion(char* newQuest, const int questMaxSize) {
 
 
 /**
-*	Добавляет в дерево данных новое слово
+*	─юсрты хЄ т фхЁхтю фрээ√ї эютюх ёыютю
 *
-*	@param dataTree Дерево данных
-*	@param oldAnsNode Узел со старым словом
-*	@param newWord Новое слово
-*	@param newQuest Новый вопрос
-*	@param ansForNew Ответ на новый вопрос для нового слова (ANSWER_YES или ANSWER_NO)
+*	@param dataTree ─хЁхтю фрээ√ї
+*	@param oldAnsNode ╙чхы ёю ёЄрЁ√ь ёыютюь
+*	@param newWord ═ютюх ёыютю
+*	@param newQuest ═ют√щ тюяЁюё
+*	@param ansForNew ╬ЄтхЄ эр эют√щ тюяЁюё фы  эютюую ёыютр (ANSWER_YES шыш ANSWER_NO)
 *
-*	@return 1 - не удалось добавить новое слово; 2 - не удалось добавить старое слово;\
- 3 - не удалось изменить значение старого узла на вопрос; 4 - некорректное значение ansForNew;\
- 0 - все прошло нормально
+*	@return 1 - эх єфрыюё№ фюсртшЄ№ эютюх ёыютю; 2 - эх єфрыюё№ фюсртшЄ№ ёЄрЁюх ёыютю;\
+ 3 - эх єфрыюё№ шчьхэшЄ№ чэрўхэшх ёЄрЁюую єчыр эр тюяЁюё; 4 - эхъюЁЁхъЄэюх чэрўхэшх ansForNew;\
+ 0 - тёх яЁю°ыю эюЁьры№эю
 */
 
 int AddWords(tree_t* dataTree, node_t* oldAnsNode, char* newWord, char* newQuest, const int ansForNew) {
@@ -262,20 +262,19 @@ int AddWords(tree_t* dataTree, node_t* oldAnsNode, char* newWord, char* newQuest
 			return 3;
 		}
 		break;
-	default:
-		return 4;
 	}
+	return 4;
 }
 
 
 /**
-*	Записывает данные игры в файл
+*	╟ряшё√трхЄ фрээ√х шуЁ√ т Їрщы
 *
-*	@param[in] dataTree Дерево с данными
-*	@param[in] dataFName Имя файла для записи
+*	@param[in] dataTree ─хЁхтю ё фрээ√ьш
+*	@param[in] dataFName ╚ь  Їрщыр фы  чряшёш
 *
-*	@return 1 - проблема при генерации кода по дереву; 2 - проблема при открытии файла;\
- 3 - проблема при записи в файл; 0 - все прошло нормально
+*	@return 1 - яЁюсыхьр яЁш ухэхЁрЎшш ъюфр яю фхЁхтє; 2 - яЁюсыхьр яЁш юЄъЁ√Єшш Їрщыр;\
+ 3 - яЁюсыхьр яЁш чряшёш т Їрщы; 0 - тёх яЁю°ыю эюЁьры№эю
 */
 
 int DataToFile(tree_t* dataTree, const char* dataFName) {
@@ -303,45 +302,49 @@ int DataToFile(tree_t* dataTree, const char* dataFName) {
 
 
 /**
-*	Добавляет новый вопрос и сохраняет (записывает) новое дерево в файл
+*	─юсрты хЄ эют√щ тюяЁюё ш ёюїЁрэ хЄ (чряшё√трхЄ) эютюх фхЁхтю т Їрщы
 *
-*	@param dataTree Дерево данных
-*	@param oldAnsNode Узел со старым словом
-*	@param[in] dataFName Имя файла с данными
+*	@param dataTree ─хЁхтю фрээ√ї
+*	@param oldAnsNode ╙чхы ёю ёЄрЁ√ь ёыютюь
+*	@param[in] dataFName ╚ь  Їрщыр ё фрээ√ьш
 *
-*	@return Возвращает ошибку. Если в разряде десятков 0, то произошла ошибка в функции AddWords();\
- если в разряде десятков 1, то в функции DataToFile. Соответствующие коды ошибок стоят в разряде единиц,\
- их смотри в соответствующих функциях.
+*	@return ┬ючтЁр∙рхЄ ю°шсъє. ┼ёыш т ЁрчЁ фх фхё Єъют 0, Єю яЁюшчю°ыр ю°шсър т ЇєэъЎшш AddWords();\
+ хёыш т ЁрчЁ фх фхё Єъют 1, Єю т ЇєэъЎшш DataToFile. ╤ююЄтхЄёЄтє■∙шх ъюф√ ю°шсюъ ёЄю Є т ЁрчЁ фх хфшэшЎ,\
+ шї ёьюЄЁш т ёююЄтхЄёЄтє■∙шї ЇєэъЎш ї.
 */
 
 int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
 	assert(oldAnsNode != NULL);
 
-	const char strMaxSize = treeStrMaxSize;  //Максимальная длина вопроса. При изменении\
-											   измените соответствующие значения в строках,\
-											   помеченных (*)!
+	const char strMaxSize = treeStrMaxSize;  //╠ръёшьры№эр  фышэр тюяЁюёр. ╧Ёш шчьхэхэшш\
+											   шчьхэшЄх ёююЄтхЄёЄтє■∙шх чэрўхэш  т ёЄЁюърї,\
+											   яюьхўхээ√ї (*)!
 
 	char newWord[strMaxSize] = "";
-	printf("Введи слово, которое ты загадал. Слово должно быть одно. \
-Если введешь несколько, то я прочитаю только первое:\n");
+	printf("┬тхфш ёыютю, ъюЄюЁюх Є√ чрурфры. ╤ыютю фюыцэю с√Є№ юфэю. \
+┼ёыш ттхфх°№ эхёъюы№ъю, Єю   яЁюўшЄр■ Єюы№ъю яхЁтюх:\n");
 	GetNewWord(newWord, strMaxSize);   //(*)
 
 	char newQuest[strMaxSize] = "";
-	printf("Введи вопрос, который отличает слово \"%s\" \
-от твоего слова \"%s\":\n", oldAnsNode->value, newWord);
+	printf("┬тхфш тюяЁюё, ъюЄюЁ√щ юЄышўрхЄ ёыютю \"%s\" \
+юЄ Єтюхую ёыютр \"%s\":\n", oldAnsNode->value, newWord);
 	GetNewQuestion(newQuest, strMaxSize);   //(*)
 
 	
 
-	printf("\nВведи ответ на этот вопрос для твоего слова \"%s\" \
-(для слова \"%s\" ответ должен быть противоположный):\n", newWord, oldAnsNode->value);
+	printf("\n┬тхфш юЄтхЄ эр ¤ЄюЄ тюяЁюё фы  Єтюхую ёыютр \"%s\" \
+(фы  ёыютр \"%s\" юЄтхЄ фюыцхэ с√Є№ яЁюЄштюяюыюцэ√щ):\n", newWord, oldAnsNode->value);
 	printf("%s\n", newQuest);
 	int ansForNew = GetYesOrNo();
+
+	printf("there1");
 
 	int err = AddWords(dataTree, oldAnsNode, newWord, newQuest, ansForNew);
 	if (err != 0) {
 		return err;
 	}
+
+	printf("there2");
 
 	err = DataToFile(dataTree, dataFName);
 	if (err != 0) {
@@ -352,20 +355,20 @@ int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
 }
 
 /**
-*	Главная функция игры
+*	├ыртэр  ЇєэъЎш  шуЁ√
 *
-*	@return 1 - ошибка при открытии файла с данными; 2 - ошибка при чтении данных;\
- 3 - ошибка при добавлении нового слова; 0 - все прошло нормально
+*	@return 1 - ю°шсър яЁш юЄъЁ√Єшш Їрщыр ё фрээ√ьш; 2 - ю°шсър яЁш ўЄхэшш фрээ√ї;\
+ 3 - ю°шсър яЁш фюсртыхэшш эютюую ёыютр; 0 - тёх яЁю°ыю эюЁьры№эю
 */
 
 int StartAkinator(const char* dataFName = "data.bts") {
 	//setlocale(LC_ALL, "Russian");
 
-	printf("Загрузка... ");
+	printf("╟руЁєчър... ");
 
 	FILE* dataFile = GetDataFile(dataFName);
 	if (dataFile == NULL) {
-		printf("\n\nОшибка при загрузке данных: невозможно открыть файл с данными\n");
+		printf("\n\n╬°шсър яЁш чруЁєчъх фрээ√ї: эхтючьюцэю юЄъЁ√Є№ Їрщы ё фрээ√ьш\n");
 		return 1;
 	}
 
@@ -373,18 +376,18 @@ int StartAkinator(const char* dataFName = "data.bts") {
 	tree_t dataTree = GetDataTree(dataFile, &err);
 	fclose(dataFile);
 	if (err != 0) {
-		printf("\n\nОшибка при загрузке данных: невозможно прочитать данные\n");
+		printf("\n\n╬°шсър яЁш чруЁєчъх фрээ√ї: эхтючьюцэю яЁюўшЄрЄ№ фрээ√х\n");
 		return 2;
 	}
 	
 
 	printf("\n\n");
-	printf("Добро пожаловать в Акинатор! Загадай предмет, а я попробую его отгадать.\n");
-	printf("Я буду спрашивать тебя наводящие вопросы, а ты отвечай \"да\" или \"нет\".\n");
+	printf("─юсЁю яюцрыютрЄ№ т └ъшэрЄюЁ! ╟рурфрщ ёыютю, р   яюяЁюсє■ хую юЄурфрЄ№.\n");
+	printf("▀ сєфє ёяЁр°штрЄ№ Єхс  эртюф ∙шх тюяЁюё√, р Є√ юЄтхўрщ \"фр\" шыш \"эхЄ\".\n");
 
 	int repeat = ANSWER_YES;
 	while (repeat==ANSWER_YES) {
-		printf("Если готов, нажми enter.\n");
+		printf("┼ёыш уюЄют, эрцьш enter.\n");
 		getchar();
 
 		node_t* ansNode = NULL;
@@ -392,21 +395,22 @@ int StartAkinator(const char* dataFName = "data.bts") {
 		printf("\n");
 
 		if (!guessed) {
-			if (AddQuestion(&dataTree, ansNode, dataFName) != 0) {
-				printf("Ошибка при добавлении нового слова.\n");
+			int TErr = AddQuestion(&dataTree, ansNode, dataFName);
+			if (TErr != 0) {
+				printf("╬°шсър яЁш фюсртыхэшш эютюую ёыютр. %d\n", TErr);
 				return 3;
 			}
 			else {
-				printf("Слово добавлено.\n");
+				printf("╤ыютю фюсртыхэю.\n");
 			}
 		}
 
-		printf("Сыграем еще?\n");
+		printf("╤√уЁрхь х∙х?\n");
 		repeat = GetYesOrNo();
 		printf("\n\n");
 	}
 
-	printf("Пока!");
+	printf("╧юър!");
 
 	return 0;
 }

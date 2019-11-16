@@ -200,6 +200,23 @@ int IsOneOfChars(const char ch, const char* chars) {
 
 
 /**
+*	Проверяет, достигнут ли конец буфера
+*
+*	@param[in] buf Буфер
+*
+*	@return 1 (true) - достигнут; 0 (false) - не достигнут
+*/
+
+int Beob(buf_t* buf) {
+	assert(buf != NULL);
+
+	if (buf->cursor >= buf->size) {
+		return 1;
+	}
+	return 0;
+}
+
+/**
 *	Читает из буфера до одного из заданного символов
 *
 *	@param[out] str Строка, в которую прочитается
@@ -225,7 +242,7 @@ int ReadToChar(char* str, buf_t* buf, const char* chars) {
 
 	while (!IsOneOfChars(curCh, chars)) {
 
-		if (curCh == EOB) {
+		if (Beob(buf)) {
 			return 1;
 		}
 

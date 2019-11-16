@@ -43,6 +43,8 @@ int Bufcat(buf_t* buf, const char* str);
 
 int IsOneOfChars(const char ch, const char* chars);
 
+int Beob(buf_t* buf);
+
 int ReadToChar(char* str, buf_t* buf, const char* chars);
 
 int Bseek(buf_t* buf, int offset, int origin);
