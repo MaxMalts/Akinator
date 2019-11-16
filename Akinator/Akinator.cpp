@@ -100,14 +100,12 @@ tree_t GetDataTree(FILE* dataFile, int* err = NULL) {
 */
 
 int GetYesOrNo() {
-	char yes[] = { -92, -96, 0 };
-	char no[] = { -83, -91, -30, 0 };
-
 
 	char ans[4] = "";
 
 	while (1) {
 		scanf("%3s", ans);
+		fseek(stdin, 0, SEEK_END);
 
 		if (strcmp(ans, "да") == 0) {
 			return ANSWER_YES;
@@ -136,7 +134,7 @@ int AkinatorCycle(node_t* curNode, node_t*& ansNode) {
 	assert(curNode!= NULL);
 
 	if (NodeChildsCount(curNode) == 0) {
-		printf("Это - %s\n", curNode->value);
+		printf("Это - %s!\n", curNode->value);
 		ansNode = curNode;
 
 		printf("Я угадал?\n");
@@ -183,14 +181,16 @@ void GetNewWord(char* newWord, const int wordMaxSize) {
 	assert(wordMaxSize > 0);
 
 	while (1) {
-		scanf("%101s", newWord);   //(*)
-		if (newWord[wordMaxSize - 1] != '\0') {
-			printf("\nСлово слишком длинное. Введи более короткое слово (макс. %d символов):\n", \
+		memset(newWord, 0, wordMaxSize);
+		scanf("%100s", newWord);   //(*)
+		fseek(stdin, 0, SEEK_END);
+
+		if (newWord[wordMaxSize - 2] != '\0') {
+			printf("Слово слишком длинное. Введи более короткое слово (макс. %d символов):\n", \
 				wordMaxSize - 1);
 		}
 		else break;
 	}
-	fseek(stdin, 0, SEEK_END);
 }
 
 
@@ -206,14 +206,16 @@ void GetNewQuestion(char* newQuest, const int questMaxSize) {
 	assert(questMaxSize > 0);
 
 	while (1) {
-		scanf("%101[^\n]s", newQuest);   //(*)
-		if (newQuest[questMaxSize - 1] != '\0') {
-			printf("\nВопрос слишком длинный. Введи более короткий вопрос (макс. %d символов):\n", \
+		memset(newQuest, 0, questMaxSize);
+		scanf("%100[^\n]s", newQuest);   //(*)
+		fseek(stdin, 0, SEEK_END);
+
+		if (newQuest[questMaxSize - 2] != '\0') {
+			printf("Вопрос слишком длинный. Введи более короткий вопрос (макс. %d символов):\n", \
 				questMaxSize - 1);
 		}
 		else break;
 	}
-	fseek(stdin, 0, SEEK_END);
 }
 
 
@@ -387,16 +389,21 @@ int StartAkinator(const char* dataFName = "data.bts") {
 
 		node_t* ansNode = NULL;
 		int guessed = AkinatorCycle(dataTree.root, ansNode);
+		printf("\n");
 
 		if (!guessed) {
 			if (AddQuestion(&dataTree, ansNode, dataFName) != 0) {
-				printf("\nОшибка при добавлении нового слова.\n");
+				printf("Ошибка при добавлении нового слова.\n");
 				return 3;
+			}
+			else {
+				printf("Слово добавлено.\n");
 			}
 		}
 
-		printf("\nСыграем еще?\n");
+		printf("Сыграем еще?\n");
 		repeat = GetYesOrNo();
+		printf("\n\n");
 	}
 
 	printf("Пока!");
