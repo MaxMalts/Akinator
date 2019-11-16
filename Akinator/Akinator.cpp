@@ -116,6 +116,16 @@ int GetYesOrNo() {
 
 }
 
+
+/**
+*	Отгадывает слово (рекурсивная)
+*
+*	@param[in] curNode Текущий узел (при первичном вызове - корень дерева данных)
+*	@param[out] ansNode Узел, являющийся ответом
+*
+*	@return 0 (false) - словов не отгадано; 1 (true) - слово отгадано
+*/
+
 int AkinatorCycle(node_t* curNode, node_t* ansNode) {
 	assert(curNode!= NULL);
 
@@ -144,7 +154,17 @@ int AkinatorCycle(node_t* curNode, node_t* ansNode) {
 	default:
 		assert(0);
 	}
+
+	return 0;
 }
+
+
+/**
+*	Главная функция игры
+*
+*	@return 1 - ошибка при открытии файла с данными; 2 - ошибка при чтении данных;\
+ 0 - все прошло нормально
+*/
 
 int StartAkinator() {
 	setlocale(LC_CTYPE, "Russian");
@@ -185,5 +205,7 @@ int StartAkinator() {
 int main() {
 
 	StartAkinator();
+
+	getchar();
 
 }
