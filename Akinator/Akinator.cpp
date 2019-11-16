@@ -89,10 +89,61 @@ tree_t GetDataTree(FILE* dataFile, int* err = NULL) {
 	return dataTree;
 }
 
-int AkinatorCycle(tree_t* dataTree) {
-	assert(dataTree != NULL);
+
+/**
+*	Добивается, чтобы пользователь ввел "да" или "нет"
+*
+*	@return 1 - "да"; 0 - "нет"
+*/
+
+int GetYesOrNo() {
+
+	char ans[4] = "";
+
+	while (true) {
+		scanf("%3s", ans);
+
+		if (strcmp(ans, "да") == 0) {
+			return 1;
+		}
+		else if (strcmp(ans, "нет") == 0) {
+			return 0;
+		}
+		else {
+			printf("Ответьте \"да\" или \"нет\".\n");
+		}
+	}
+
+}
+
+int AkinatorCycle(node_t* curNode, node_t* ansNode) {
+	assert(curNode!= NULL);
+
+	if (NodeChildsCount(curNode) == 0) {
+		printf("Это - %s\n", curNode->value);
+		ansNode = curNode;
+
+		printf("Я угадал?\n");
+
+		int ans = GetYesOrNo();
+
+		assert(ans == 0 || ans == 1);
+		return ans;
+	}
 
 
+	printf("%s\n", curNode->value);
+
+	int ans = GetYesOrNo();
+
+	switch (ans) {
+	case 1:
+		return AkinatorCycle(curNode->right, ansNode);
+	case 0:
+		return AkinatorCycle(curNode->left, ansNode);
+	default:
+		assert(0);
+	}
 }
 
 int StartAkinator() {
@@ -121,7 +172,12 @@ int StartAkinator() {
 	printf("Если готов, нажми enter.\n");
 	getchar();
 	
-	AkinatorCycle(&dataTree);
+	node_t* ansNode = NULL;
+	int guessed = AkinatorCycle(dataTree.root, ansNode);
+
+	if (!guessed) {
+		
+	}
 
 	return 0;
 }
