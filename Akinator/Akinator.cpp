@@ -9,6 +9,8 @@
 #define ANSWER_NO 0
 
 
+
+
 /**
 *	Открывает файл с данными
 *
@@ -92,6 +94,37 @@ tree_t GetDataTree(FILE* dataFile, int* err = NULL) {
 	return dataTree;
 }
 
+
+/**
+*	Показывает дерево данных
+*
+*	@param[in] dataFName
+*
+*	@return 1 - ошибка при открытии файла; 2 - ошибка при чтении данных;\
+ 3 - ошибка припоказе дерева; 0 - все прошло нормально
+*/
+
+int ShowData(const char* dataFName = "data.bts") {
+	assert(dataFName != NULL);
+
+	FILE* dataFile = GetDataFile(dataFName);
+	if (dataFile == NULL) {
+		return 1;
+	}
+
+	int err = 0;
+	tree_t dataTree = GetDataTree(dataFile, &err);
+	fclose(dataFile);
+	if (err != 0) {
+		return 2;
+	}
+
+	if (ShowTree(&dataTree) != 0) {
+		return 3;
+	}
+
+	return 0;
+}
 
 /**
 *	Добивается, чтобы пользователь ввел "да" или "нет"
@@ -415,7 +448,9 @@ int StartAkinator(const char* dataFName = "data.bts") {
 
 int main() {
 
-	int err = StartAkinator();
+	//int err = StartAkinator();
+
+	int err = ShowData();
 
 	fseek(stdin, 0, SEEK_END);
 	getchar();

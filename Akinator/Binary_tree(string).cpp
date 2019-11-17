@@ -243,7 +243,7 @@ int NodesOutput(FILE* gvFile, node_t* node) {
 	char* valueS = Value_tToStr(node->value);
 
 #ifdef _DEBUG
-	fprintf(gvFile, "\t%d [label=\"{%p|%p|%s|{%p|%p}}\"]\n", (int)node, node, node->parent, valueS, node->left, node->right);
+	fprintf(gvFile, "\t%d [label=\"{%p|%p|\\%s|{%p|%p}}\"]\n", (int)node, node, node->parent, valueS, node->left, node->right);
 #else
 	fprintf(gvFile, "\t%d [label=\"%s\"]", (int)node, valueS);
 #endif
@@ -257,6 +257,72 @@ int NodesOutput(FILE* gvFile, node_t* node) {
 		NodesOutput(gvFile, node->right);
 		fprintf(gvFile, "\t%d -> %d\n", (int)node, (int)node->right);
 	}
+
+	return 0;
+}
+
+
+/**
+*	Определяет размер файла с учетом символа '\r'
+*
+*	@param[in] f Файл
+*
+*	@return Размер файла. Если размер отрицательный, то произошла ошибка
+*/
+
+int GetFileSizeTr(FILE* f) {
+	assert(f != NULL);
+	if (fseek(f, 0, SEEK_END) != 0) {
+		return -1;
+	}
+
+	int fileSize = ftell(f);
+
+	if (fseek(f, 0, SEEK_SET) != 0) {
+		return -1;
+	}
+
+	return fileSize;
+}
+
+
+/**
+*	Удаляет маркер UTF-8 из файла (конвертирует из UTF-8 BOM в UTF-8)
+*
+*	@param[in] fName Имя файла
+*
+*	@return 1 - не удалось открыть файл на чтение; 2 - не удалось определить размер файла;\
+ 3 - не удалось прочитать файл; 4 - не удалось открыть файл на запись;\
+ 5 - не удалось записать в файл; 0 - все прошло нормально
+*/
+
+int DeleteUtfMarker(const char* fName) {
+	assert(fName != NULL);
+
+	FILE* f = fopen(fName, "rb");
+	if (f == NULL) {
+		return 1;
+	}
+
+	int fSize = GetFileSizeTr(f);
+	if (fSize < 0) {
+		return 2;
+	}
+
+	char* buf = (char*)calloc(fSize + 1, sizeof(char));
+	if (fread(buf, sizeof(char), fSize, f) != fSize) {
+		return 3;
+	}
+	fclose(f);
+
+	f = fopen(fName, "wb");
+	if (f == NULL) {
+		return 4;
+	}
+	if (fwrite(&buf[3], sizeof(char), fSize - 3, f) != fSize - 3) {
+		return 5;
+	}
+	fclose(f);
 
 	return 0;
 }
@@ -284,25 +350,37 @@ int CreateTreeImage(tree_t* tree, const char foutName[], const char gvFileName[]
 	}
 #endif
 
-	FILE* gvFile = fopen(gvFileName, "w");
-	if (NULL == gvFile) {
+	char* tempGvFileName = (char*)calloc(strlen(gvFileName) + 7, sizeof(char));
+	sprintf(tempGvFileName, "%s.temp", gvFileName);
+	FILE* tempGvFile = fopen(tempGvFileName, "w");
+	if (NULL == tempGvFile) {
 		return 1;
 	}
 	
 #ifdef _DEBUG
-	fprintf(gvFile, "digraph %s {\n", tree->name);
-	fprintf(gvFile, "\tnode [shape=record]\n\n");
-	fprintf(gvFile, "\tformat_node [label=\"{adress|parent|value|{left|right}}\"]\n\n");
+	fprintf(tempGvFile, "digraph %s {\n", tree->name);
+	fprintf(tempGvFile, "\tnode [shape=record]\n\n");
+	fprintf(tempGvFile, "\tformat_node [label=\"{adress|parent|value|{left|right}}\"]\n\n");
 #else
-	fprintf(gvFile, "digraph {\n");
+	fprintf(tempGvFile, "digraph {\n");
 #endif
 
-	NodesOutput(gvFile, tree->root);
+	NodesOutput(tempGvFile, tree->root);
 
-	fprintf(gvFile, "}");
-	fclose(gvFile);
+	fprintf(tempGvFile, "}");
+	fclose(tempGvFile);
 
 	char sysCommand[1000] = "";
+	sprintf(sysCommand, "start /wait powershell -command \"get-content -path %s | \
+out-file %s -encoding utf8\"", tempGvFileName, gvFileName);
+	system(sysCommand);
+
+	DeleteUtfMarker(gvFileName);
+	
+	sprintf(sysCommand, "del %s", tempGvFileName);
+	system(sysCommand);
+	free(tempGvFileName);
+
 	sprintf(sysCommand, "dot -Tpng %s -o %s", gvFileName, foutName);
 	system(sysCommand);
 
