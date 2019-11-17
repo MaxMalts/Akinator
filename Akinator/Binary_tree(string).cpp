@@ -381,7 +381,7 @@ out-file %s -encoding utf8\"", tempGvFileName, gvFileName);
 	system(sysCommand);
 	free(tempGvFileName);
 
-	sprintf(sysCommand, "dot -Tpng %s -o %s", gvFileName, foutName);
+	sprintf(sysCommand, "start /wait dot -Tpng %s -o %s", gvFileName, foutName);
 	system(sysCommand);
 
 	return 0;

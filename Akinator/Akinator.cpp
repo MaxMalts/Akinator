@@ -9,8 +9,6 @@
 #define ANSWER_NO 0
 
 
-
-
 /**
 *	Открывает файл с данными
 *
@@ -49,6 +47,29 @@ int GetFileSize(FILE* f) {
 	return fileSize;
 }
 
+
+/**
+*	Читает заданное количество символов из входного потока со спецификатором формата
+*
+*	@param[in] formSpec Спецификатор формата
+*	@param[in] NChars Количество символов (с учетом последнего '\0')
+*	@param[out] buf Буфер
+*
+*	@return 1 - ошибка; 0 - все прошло нормально
+*/
+
+int ScanNChars(const char* formSpec, const int NChars, char* buf) {
+	assert(buf != NULL);
+	assert(NChars >= 0);
+
+	char format[100] = "";
+	sprintf(format, "%%%s%ds", formSpec, NChars - 1);
+	if (scanf(format, buf) != 1)
+		return 1;
+	fseek(stdin, 0, SEEK_END);
+
+	return 0;
+}
 
 /**
 *	Создает дерево с данными из файла
@@ -215,8 +236,8 @@ void GetNewWord(char* newWord, const int wordMaxSize) {
 
 	while (1) {
 		memset(newWord, 0, wordMaxSize);
-		scanf("%100s", newWord);   //(*)
-		fseek(stdin, 0, SEEK_END);
+
+		ScanNChars("", wordMaxSize, newWord);
 
 		if (newWord[wordMaxSize - 2] != '\0') {
 			printf("Слово слишком длинное. Введи более короткое слово (макс. %d символов):\n", \
@@ -240,8 +261,8 @@ void GetNewQuestion(char* newQuest, const int questMaxSize) {
 
 	while (1) {
 		memset(newQuest, 0, questMaxSize);
-		scanf("%100[^\n]s", newQuest);   //(*)
-		fseek(stdin, 0, SEEK_END);
+
+		ScanNChars("[^\n]", questMaxSize, newQuest);
 
 		if (newQuest[questMaxSize - 2] != '\0') {
 			printf("Вопрос слишком длинный. Введи более короткий вопрос (макс. %d символов):\n", \
@@ -358,12 +379,12 @@ int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
 	char newWord[strMaxSize] = "";
 	printf("Введи слово, которое ты загадал. Слово должно быть одно. \
 Если введешь несколько, то я прочитаю только первое:\n");
-	GetNewWord(newWord, strMaxSize);   //(*)
+	GetNewWord(newWord, strMaxSize);
 
 	char newQuest[strMaxSize] = "";
 	printf("Введи вопрос, который отличает слово \"%s\" \
 от твоего слова \"%s\":\n", oldAnsNode->value, newWord);
-	GetNewQuestion(newQuest, strMaxSize);   //(*)
+	GetNewQuestion(newQuest, strMaxSize);
 
 	
 
@@ -385,11 +406,34 @@ int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
 	return 0;
 }
 
+
+/**
+*	Считывает ввод и определяет, хочет ли пользователь увидеть дерево данных
+*
+*	@return 1 (true) - хочет; 0 (false) - не хочет
+*/
+
+int WantsData() {
+	const char dataCommand[] = "show_data";   ///<Кодовое слово, которое нужно 
+	                                          ///ввести, чтобы увидеть дерево данных
+
+	char inp[sizeof(dataCommand) + 1] = "";
+
+	ScanNChars("[^\n]", sizeof(dataCommand) + 1, inp);
+
+	if (strcmp(inp, dataCommand) == 0) {
+		return 1;
+	}
+
+	return 0;
+}
+
 /**
 *	Главная функция игры
 *
 *	@return 1 - ошибка при открытии файла с данными; 2 - ошибка при чтении данных;\
- 3 - ошибка при добавлении нового слова; 0 - все прошло нормально
+ 3 - ошибка при добавлении нового слова; 4 -ошибка при показе дерева данных;\
+ 0 - все прошло нормально
 */
 
 int StartAkinator(const char* dataFName = "data.bts") {
@@ -419,7 +463,13 @@ int StartAkinator(const char* dataFName = "data.bts") {
 	int repeat = ANSWER_YES;
 	while (repeat==ANSWER_YES) {
 		printf("Если готов, нажми enter.\n");
-		getchar();
+		if (WantsData()) {
+			if (ShowData(dataFName) != 0) {
+				printf("Ошибка при показе данных.\n");
+				return 4;
+			}
+			continue;
+		}
 
 		node_t* ansNode = NULL;
 		int guessed = AkinatorCycle(dataTree.root, ansNode);
@@ -448,9 +498,9 @@ int StartAkinator(const char* dataFName = "data.bts") {
 
 int main() {
 
-	//int err = StartAkinator();
+	int err = StartAkinator();
 
-	int err = ShowData();
+	//int err = ShowData();
 
 	fseek(stdin, 0, SEEK_END);
 	getchar();
