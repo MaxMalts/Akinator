@@ -3,11 +3,14 @@
 #include <assert.h>
 #include <string.h>
 #include <locale.h>
+#include <math.h>
 #include "btree_string.h"
 
 #define ANSWER_YES 1
 #define ANSWER_NO 0
 
+#define COMMAND_DATA 1
+#define COMMAND_WORDS 2
 
 /**
 *	Открывает файл с данными
@@ -51,19 +54,19 @@ int GetFileSize(FILE* f) {
 /**
 *	Читает заданное количество символов из входного потока со спецификатором формата
 *
-*	@param[in] formSpec Спецификатор формата
-*	@param[in] NChars Количество символов (с учетом последнего '\0')
 *	@param[out] buf Буфер
+*	@param[in] formSpec Спецификатор формата
+*	@param[in] NChars Количество символов. Внимание, в конце может дописаться еще один '\0'!
 *
 *	@return 1 - ошибка; 0 - все прошло нормально
 */
 
-int ScanNChars(const char* formSpec, const int NChars, char* buf) {
+int ScanNChars(char* buf, const char* formSpec, const int NChars) {
 	assert(buf != NULL);
 	assert(NChars >= 0);
 
 	char format[100] = "";
-	sprintf(format, "%%%s%ds", formSpec, NChars - 1);
+	sprintf(format, "%%%s%ds", formSpec, NChars);
 	if (scanf(format, buf) != 1)
 		return 1;
 	fseek(stdin, 0, SEEK_END);
@@ -237,7 +240,7 @@ void GetNewWord(char* newWord, const int wordMaxSize) {
 	while (1) {
 		memset(newWord, 0, wordMaxSize);
 
-		ScanNChars("", wordMaxSize, newWord);
+		ScanNChars(newWord, "", wordMaxSize - 1);
 
 		if (newWord[wordMaxSize - 2] != '\0') {
 			printf("Слово слишком длинное. Введи более короткое слово (макс. %d символов):\n", \
@@ -262,7 +265,7 @@ void GetNewQuestion(char* newQuest, const int questMaxSize) {
 	while (1) {
 		memset(newQuest, 0, questMaxSize);
 
-		ScanNChars("[^\n]", questMaxSize, newQuest);
+		ScanNChars(newQuest, "[^\n]", questMaxSize - 1);
 
 		if (newQuest[questMaxSize - 2] != '\0') {
 			printf("Вопрос слишком длинный. Введи более короткий вопрос (макс. %d символов):\n", \
@@ -408,21 +411,92 @@ int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
 
 
 /**
-*	Считывает ввод и определяет, хочет ли пользователь увидеть дерево данных
+*	Записывает массив строк в файл
 *
-*	@return 1 (true) - хочет; 0 (false) - не хочет
+*	@param[in] foutName Имя выходного файла
+*	@param[in] words Массив строк
+*	@param[in] NWords Количество строк
+*	@param[in] separator Разделитель между словами
+*
+*	@return 1 - не удалось открыть файл; 0 - все прошло нормально
 */
 
-int WantsData() {
-	const char dataCommand[] = "show_data";   ///<Кодовое слово, которое нужно 
-	                                          ///ввести, чтобы увидеть дерево данных
+int WordsToFile(const char* foutName, char** words, const int NWords, const char* separator) {
+	assert(foutName != NULL);
+	assert(words != NULL);
+	assert(NWords >= 0);
+	assert(separator != NULL);
 
-	char inp[sizeof(dataCommand) + 1] = "";
+	FILE* fout = fopen(foutName, "w");
+	if (fout == NULL) {
+		return 1;
+	}
+	for (int i = 0; i < NWords - 1; i++) {
+		fprintf(fout, "%s", words[i]);
+		fprintf(fout, "%s", separator);
+	}
+	fprintf(fout, "%s", words[NWords - 1]);
+	fclose(fout);
 
-	ScanNChars("[^\n]", sizeof(dataCommand) + 1, inp);
+	return 0;
+}
+
+
+/**
+*	Записывает список всех доступных слов
+*
+*	@param[in] dataTree Дерево данных
+*	@param[in] foutName Имя выходного файла
+*
+*	@return 1 - ошибка при создании массива слов; 2 - ошибка при записи слов в файл;\
+ 0 - все прошло нормально
+*/
+
+int GetWords(tree_t* dataTree, const char* foutName="words.txt") {
+	assert(dataTree != NULL);
+	assert(foutName != NULL);
+
+	char** words = NULL;
+	int NWords = 0;
+	if (LastNodesWords(dataTree, words, &NWords) != 0) {
+		return 1;
+	}
+
+	if (WordsToFile(foutName, words, NWords, "\n") != 0) {
+		return 2;
+	}
+
+	for (int i = 0; i < NWords; i++) {
+		free(words[i]);
+	}
+	free(words);
+
+	return 0;
+}
+
+
+/**
+*	Считывает ввод и определяет, какую секретную команды ввел пользователь
+*
+*	@return COMMAND_DATA - показ дерева данных;\
+ COMMAND_WORDS - список доступных слов; 0 - секретная комманда не введена
+*/
+
+int SecretCommand() {
+	const int commMaxLen = 50;  ///<Максимальная длина команды. Должна соответствовать самим командам
+	const char dataCommand[] = "show_data";   ///<Показать дерево данных
+	const char wordsCommand[] = "get_words";  ///<Получть список доступных слов
+
+
+	char inp[commMaxLen + 1] = "";
+
+	ScanNChars(inp, "[^\n]", commMaxLen);
 
 	if (strcmp(inp, dataCommand) == 0) {
-		return 1;
+		return COMMAND_DATA;
+	}
+	if (strcmp(inp, wordsCommand) == 0) {
+		return COMMAND_WORDS;
 	}
 
 	return 0;
@@ -433,7 +507,7 @@ int WantsData() {
 *
 *	@return 1 - ошибка при открытии файла с данными; 2 - ошибка при чтении данных;\
  3 - ошибка при добавлении нового слова; 4 -ошибка при показе дерева данных;\
- 0 - все прошло нормально
+ 5 - ошибка при записи доступных слов; 0 - все прошло нормально
 */
 
 int StartAkinator(const char* dataFName = "data.bts") {
@@ -463,10 +537,24 @@ int StartAkinator(const char* dataFName = "data.bts") {
 	int repeat = ANSWER_YES;
 	while (repeat==ANSWER_YES) {
 		printf("Если готов, нажми enter.\n");
-		if (WantsData()) {
+		int secrComm = SecretCommand();
+		switch (secrComm) {
+		case COMMAND_DATA:
 			if (ShowData(dataFName) != 0) {
 				printf("Ошибка при показе данных.\n");
 				return 4;
+			}
+			continue;
+		case COMMAND_WORDS:
+			char fName[201] = "";
+			ScanNChars(fName, "", 200);
+			printf("\n");
+			if (GetWords(&dataTree, fName) != 0) {
+				printf("\nОшибка при получении доступных слов.\n");
+				return 5;
+			}
+			else {
+				printf("\nЗаписано успешно в %s\n\n", fName);
 			}
 			continue;
 		}

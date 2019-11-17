@@ -262,6 +262,88 @@ int NodesOutput(FILE* gvFile, node_t* node) {
 }
 
 
+/*  Не для пользователя
+*	Рекурсивная функция для создания массива строк "последниъ" узлов
+*
+*	@param[in] curNode Текущий узел
+*	@param[out] words Массив слов
+*	@param[out] NNodes Количество слов
+*
+*	@return 1 - проблема при реаллокации words; 0 - все прошло нормально
+*/
+
+int LastNodesValuesRec(node_t* curNode, char**& words, int* NNodes) {
+	assert(curNode != NULL);
+	assert(words != NULL);
+	assert(NNodes != NULL);
+
+	if (NodeChildsCount(curNode) == 0) {
+		(*NNodes)++;
+		words = (char**)realloc(words, *NNodes * sizeof(char*));
+		words[*NNodes - 1] = (char*)calloc(treeStrMaxSize, sizeof(char));
+		if (words[*NNodes - 1] == NULL) {
+			return 1;
+		}
+		strncpy(words[*NNodes - 1], curNode->value, treeStrMaxSize - 1);
+	}
+	else {
+		if (curNode->left != NULL) {
+			int err = LastNodesValuesRec(curNode->left, words, NNodes);
+			if (err != 0) {
+				return err;
+			}
+		}
+		if (curNode->right != NULL) {
+			int err = LastNodesValuesRec(curNode->right, words, NNodes);
+			if (err != 0) {
+				return err;
+			}
+		}
+	}
+
+	return 0;
+}
+
+
+/**
+*	Создает массив строк со значениями "последних" узлов
+*
+*	@param[in] tree Дерево
+*	@param[out] words Массив строк (на входе должен быть NULL)
+*	@param[out] NNodes Количество строк
+*
+*	@return 1 - на вход подалось некорректное дерево; 2 - words != NULL;\
+ 3 - проблема при реаллокации words; 4 - другая ошибка; 0 - все прошло нормально
+*/
+
+int LastNodesWords(tree_t* tree, char**& words, int* NNodes) {
+	assert(tree != NULL);
+	assert(NNodes != NULL);
+
+#ifdef _DEBUG
+	if (!TreeOk(tree)) {
+		PrintTree_NOK(*tree);
+		return 1;
+	}
+#endif
+
+	if (words != NULL) {
+		return 2;
+	}
+
+	*NNodes = 0;
+	words = (char**)calloc(1, sizeof(char*));
+	int err = LastNodesValuesRec(tree->root, words, NNodes);
+
+	if (err != 0) {
+		return 3;
+	}
+	if (*NNodes > tree->size) {
+		return 4;
+	}
+	return 0;
+}
+
 /**
 *	Определяет размер файла с учетом символа '\r'
 *
