@@ -482,7 +482,7 @@ int GetWords(tree_t* dataTree, const char* foutName="words.txt") {
  COMMAND_WORDS - список доступных слов; 0 - секретная комманда не введена
 */
 
-int SecretCommand() {
+int SecretCommandEntered() {
 	const int commMaxLen = 50;  ///<Максимальная длина команды. Должна соответствовать самим командам
 	const char dataCommand[] = "show_data";   ///<Показать дерево данных
 	const char wordsCommand[] = "get_words";  ///<Получть список доступных слов
@@ -501,6 +501,48 @@ int SecretCommand() {
 
 	return 0;
 }
+
+
+/**
+*	Обрабатывает секретные команды
+*
+*	@param[in] dataTree Дерево данных
+*	@param[in] dataFName Имя файла данных
+*
+*	@return 1 (true) - команда была введена и успешно выполнена;\
+ 0 (false) - команда не была введена; -1 - была введена команда COMMAND_DATA,\
+ но возникла ошибка при выполнении; -2 - была введена команда COMMAND_WORDS,\
+ но возникла ошибка при выполнении;
+*/
+
+int SecretCommand(tree_t* dataTree, const char* dataFName) {
+	assert(dataTree != NULL);
+	assert(dataFName != NULL);
+
+	int secrComm = SecretCommandEntered();
+	switch (secrComm) {
+	case COMMAND_DATA:
+		if (ShowData(dataFName) != 0) {
+			printf("Ошибка при показе данных.\n");
+			return -1;
+		}
+		return 1;
+	case COMMAND_WORDS:
+		char fName[201] = "";
+		printf("Куда записать слова: ");
+		ScanNChars(fName, "", 200);
+		printf("\n");
+		if (GetWords(dataTree, fName) != 0) {
+			printf("\nОшибка при получении доступных слов.\n");
+			return -2;
+		}
+		printf("\nЗаписано успешно в %s\n", fName);
+		return 1;
+	}
+
+	return 0;
+}
+
 
 /**
 *	Главная функция игры
@@ -536,27 +578,20 @@ int StartAkinator(const char* dataFName = "data.bts") {
 
 	int repeat = ANSWER_YES;
 	while (repeat==ANSWER_YES) {
-		printf("Если готов, нажми enter.\n");
-		int secrComm = SecretCommand();
-		switch (secrComm) {
-		case COMMAND_DATA:
-			if (ShowData(dataFName) != 0) {
-				printf("Ошибка при показе данных.\n");
-				return 4;
-			}
-			continue;
-		case COMMAND_WORDS:
-			char fName[201] = "";
-			ScanNChars(fName, "", 200);
+		printf("\nЕсли готов, нажми enter.\n");
+		err = SecretCommand(&dataTree, dataFName);
+		if (err > 0) {
 			printf("\n");
-			if (GetWords(&dataTree, fName) != 0) {
-				printf("\nОшибка при получении доступных слов.\n");
-				return 5;
-			}
-			else {
-				printf("\nЗаписано успешно в %s\n\n", fName);
-			}
 			continue;
+		}
+		if (err == -1) {
+			return 4;
+		}
+		if (err == -2) {
+			return 5;
+		}
+		if (err < -2) {
+			assert(0);
 		}
 
 		node_t* ansNode = NULL;
