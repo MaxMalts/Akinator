@@ -380,8 +380,8 @@ int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
 											   помеченных (*)!
 
 	char newWord[strMaxSize] = "";
-	printf("Введи слово, которое ты загадал. Слово должно быть одно. \
-Если введешь несколько, то я прочитаю только первое:\n");
+	printf("Хм... Возможно я не знаю это слово. Расскажи мне о нем, введи слово, которое ты загадал.\n");
+	printf("Слово должно быть одно. Если введешь несколько, то я прочитаю только первое:\n");
 	GetNewWord(newWord, strMaxSize);
 
 	char newQuest[strMaxSize] = "";
