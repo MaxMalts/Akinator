@@ -262,8 +262,10 @@ int AddWords(tree_t* dataTree, node_t* oldAnsNode, char* newWord, char* newQuest
 			return 3;
 		}
 		break;
+	default:
+		return 4;
 	}
-	return 4;
+	return 0;
 }
 
 
@@ -337,14 +339,10 @@ int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
 	printf("%s\n", newQuest);
 	int ansForNew = GetYesOrNo();
 
-	printf("there1");
-
 	int err = AddWords(dataTree, oldAnsNode, newWord, newQuest, ansForNew);
 	if (err != 0) {
 		return err;
 	}
-
-	printf("there2");
 
 	err = DataToFile(dataTree, dataFName);
 	if (err != 0) {
@@ -401,13 +399,13 @@ int StartAkinator(const char* dataFName = "data.bts") {
 				return 3;
 			}
 			else {
-				printf("Слово добавлено.\n");
+				printf("Слово добавлено.\n\n");
 			}
 		}
 
 		printf("Сыграем еще?\n");
 		repeat = GetYesOrNo();
-		printf("\n\n");
+		printf("\n");
 	}
 
 	printf("Пока!");
