@@ -1026,7 +1026,7 @@ int CodeToNodes(buf_t* buf, node_t*& node, int* size) {
 			Bseek(buf, -1, BSEEK_CUR);
 
 			char valueS[100] = "";
-			ReadToChar(valueS, buf, "{,}");
+			ReadToChar(valueS, buf, "{}");
 
 			node_t* newNode = CreateNode();
 
@@ -1071,7 +1071,7 @@ int CodeToNodes(buf_t* buf, node_t*& node, int* size) {
 			Bseek(buf, -1, BSEEK_CUR);
 
 			char valueS[100] = "";
-			ReadToChar(valueS, buf, "{,}");
+			ReadToChar(valueS, buf, "{}");
 
 			node_t* newNode = CreateNode();
 
