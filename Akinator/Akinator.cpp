@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include <locale.h>
+#include <ctype.h>
 #include <math.h>
 #include "btree_string.h"
 
@@ -11,6 +12,15 @@
 
 #define COMMAND_DATA 1
 #define COMMAND_WORDS 2
+
+
+int IsUpperRus(char ch) {
+	if (ch >= 'А' && ch <= 'Я') {
+		return 1;
+	}
+
+	return 0;
+}
 
 /**
 *	Открывает файл с данными
@@ -270,8 +280,20 @@ void GetNewQuestion(char* newQuest, const int questMaxSize) {
 		if (newQuest[questMaxSize - 2] != '\0') {
 			printf("Вопрос слишком длинный. Введи более короткий вопрос (макс. %d символов):\n", \
 				questMaxSize - 1);
+			continue;
 		}
-		else break;
+
+		if (!IsUpperRus(newQuest[0])) {
+			printf("Вопрос должен начинаться с большой буквы.\n");
+			continue;
+		}
+
+		if (strstr(newQuest, " не ") || strstr(newQuest, "Не ")) {
+			printf("Нельзя вводить вопрос со словом \"не\". Введи другой вопрос:\n");
+			continue;
+		}
+
+		break;
 	}
 }
 
