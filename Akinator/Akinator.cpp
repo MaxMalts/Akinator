@@ -525,9 +525,8 @@ int SecretCommandEntered() {
  но возникла ошибка при выполнении;
 */
 
-int SecretCommand(tree_t* dataTree, const char* dataFName) {
+int SecretCommand(tree_t* dataTree) {
 	assert(dataTree != NULL);
-	assert(dataFName != NULL);
 
 	int secrComm = SecretCommandEntered();
 	switch (secrComm) {
@@ -555,6 +554,8 @@ int SecretCommand(tree_t* dataTree, const char* dataFName) {
 
 
 //int AdvancedCommand(tree_t* dataTree) {
+//	assert(dataTree != NULL);
+//
 //
 //}
 
@@ -596,7 +597,7 @@ int StartAkinator(const char* dataFName = "data.bts") {
 		//err = AdvancedCommand(&dataTree);
 
 
-		err = SecretCommand(&dataTree, dataFName);
+		err = SecretCommand(&dataTree);
 		if (err > 0) {
 			printf("\n");
 			continue;
