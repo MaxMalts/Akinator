@@ -407,14 +407,14 @@ int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
 	GetNewWord(newWord, strMaxSize);
 
 	char newQuest[strMaxSize] = "";
-	printf("Введи вопрос, который отличает слово \"%s\" \
-от твоего слова \"%s\":\n", oldAnsNode->value, newWord);
+	printf("Введи вопрос, который отличает слово \"%s\" "
+	       "от твоего слова \"%s\":\n", oldAnsNode->value, newWord);
 	GetNewQuestion(newQuest, strMaxSize);
 
 	
 
-	printf("\nВведи ответ на этот вопрос для твоего слова \"%s\" \
-(для слова \"%s\" ответ должен быть противоположный):\n", newWord, oldAnsNode->value);
+	printf("\nВведи ответ на этот вопрос для твоего слова \"%s\" "
+	       "(для слова \"%s\" ответ должен быть противоположный):\n", newWord, oldAnsNode->value);
 	printf("%s\n", newQuest);
 	int ansForNew = GetYesOrNo();
 
@@ -575,7 +575,6 @@ int SecretCommand(tree_t* dataTree, const char* dataFName) {
 */
 
 int StartAkinator(const char* dataFName = "data.bts") {
-	//setlocale(LC_ALL, "Russian");
 
 	printf("Загрузка... ");
 
@@ -644,8 +643,6 @@ int StartAkinator(const char* dataFName = "data.bts") {
 int main() {
 
 	int err = StartAkinator();
-
-	//int err = ShowData();
 
 	fseek(stdin, 0, SEEK_END);
 	getchar();
