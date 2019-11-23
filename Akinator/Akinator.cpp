@@ -132,33 +132,21 @@ tree_t GetDataTree(FILE* dataFile, int* err = NULL) {
 /**
 *	Показывает дерево данных
 *
-*	@param[in] dataFName
+*	@param[in] dataTree Дерево данных
 *
-*	@return 1 - ошибка при открытии файла; 2 - ошибка при чтении данных;\
- 3 - ошибка припоказе дерева; 0 - все прошло нормально
+*	@return 1 - не удалось показать дерево; 0 - все прошло нормально
 */
 
-int ShowData(const char* dataFName = "data.bts") {
-	assert(dataFName != NULL);
+int ShowData(tree_t* dataTree) {
+	assert(dataTree != NULL);
 
-	FILE* dataFile = GetDataFile(dataFName);
-	if (dataFile == NULL) {
+	if (ShowTree(dataTree) != 0) {
 		return 1;
-	}
-
-	int err = 0;
-	tree_t dataTree = GetDataTree(dataFile, &err);
-	fclose(dataFile);
-	if (err != 0) {
-		return 2;
-	}
-
-	if (ShowTree(&dataTree) != 0) {
-		return 3;
 	}
 
 	return 0;
 }
+
 
 /**
 *	Добивается, чтобы пользователь ввел "да" или "нет"
@@ -544,7 +532,7 @@ int SecretCommand(tree_t* dataTree, const char* dataFName) {
 	int secrComm = SecretCommandEntered();
 	switch (secrComm) {
 	case COMMAND_DATA:
-		if (ShowData(dataFName) != 0) {
+		if (ShowData(dataTree) != 0) {
 			printf("Ошибка при показе данных.\n");
 			return -1;
 		}
@@ -565,6 +553,10 @@ int SecretCommand(tree_t* dataTree, const char* dataFName) {
 	return 0;
 }
 
+
+//int AdvancedCommand(tree_t* dataTree) {
+//
+//}
 
 /**
 *	Главная функция игры
@@ -600,6 +592,10 @@ int StartAkinator(const char* dataFName = "data.bts") {
 	int repeat = ANSWER_YES;
 	while (repeat==ANSWER_YES) {
 		printf("\nЕсли готов, нажми enter.\n");
+
+		//err = AdvancedCommand(&dataTree);
+
+
 		err = SecretCommand(&dataTree, dataFName);
 		if (err > 0) {
 			printf("\n");
