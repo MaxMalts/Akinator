@@ -687,6 +687,10 @@ int CompareWords(tree_t* dataTree) {
 		assert(0);
 	}
 
+	free(way1);
+	free(way2);
+	BufDestructor(&way1Buf);
+	BufDestructor(&way2Buf);
 	return 0;
 }
 
@@ -768,6 +772,8 @@ int DetermineWord(tree_t* dataTree) {
 		return 3;
 	}
 
+	free(way);
+	BufDestructor(&wayBuf);
 	return 0;
 }
 
