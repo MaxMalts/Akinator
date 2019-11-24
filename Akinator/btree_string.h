@@ -66,7 +66,7 @@ int NodeChildsCount(node_t* node);
 *	@return 0 - все прошло нормально
 */
 
-int CopyValue_t(value_t* dest, value_t* source);
+int CopyValue_t(value_t dest, value_t source);
 
 
 /**
@@ -79,6 +79,17 @@ int CopyValue_t(value_t* dest, value_t* source);
 
 char* Value_tToStr(const value_t value);
 
+
+/**
+*	Сравнивает значения value_t
+*
+*	@param[in] value1 Первое значение
+*	@param[in] value2 Второе значение
+*
+*	@return < 0 - первое значение меньше второго; 0 - значения равны; > 0 - первое значение больше второго
+*/
+
+int ValueCmp(value_t* value1, value_t* value2);
 
 /**
 *	Преобразует строку в value_t
@@ -287,3 +298,18 @@ char* TreeToCode(tree_t* tree, int* size = NULL);
 */
 
 tree_t CodeToTree(char* code, const char* treeName="tree_from_code", int* err = NULL);
+
+
+/**
+*	Ищет узел с указанным значением
+*
+*	@param[in] tree Дерево
+*	@param[in] value Значение
+*	@param[out] err Ошибка: 1 - произвольная ошибка; 2 - узел с таким значением не найден
+*
+*	@return Указатель на строку с путем до найденного узла (если нашелся) в виде '0' и '1',\
+ где '0' означает левого сына, '1' - правого. В конце строки ставится '\0'.\
+ Не забудьте освободить память по этому указателю! Если возникла ошибка, возвращает NULL.
+*/
+
+char* FindNodeByValue(tree_t* tree, value_t* value, node_t*& foundNode, int* err = NULL);

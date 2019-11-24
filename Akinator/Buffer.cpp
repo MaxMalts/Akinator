@@ -50,7 +50,9 @@ buf_t BufConstructor(const char mode, char* str, const int strSize, int* err) {
 	buf.mode = 'r';
 	buf.lastChar = strSize - 1;
 	
-	*err = 0;
+	if (err != NULL) {
+		*err = 0;
+	}
 	return buf;
 }
 
@@ -84,6 +86,9 @@ buf_t BufConstructor(const char mode, int* err) {
 	buf.mode = 'w';
 	buf.lastChar = 0;
 
+	if (err != NULL) {
+		*err = 0;
+	}
 	return buf;
 }
 
@@ -109,6 +114,7 @@ int Bputc(buf_t* buf, const char ch) {
 		if (realloc(buf->str, buf->size * 2) == NULL) {
 			return 2;
 		}
+		buf->size = buf->size * 2;
 	}
 
 	buf->str[buf->cursor++] = ch;
@@ -340,34 +346,23 @@ int IncreaseBuf(buf_t* buf, const int newSize) {
 	return 0;
 }
 
+
 /**
-*	Удаляет буфер. Если он был в режиме чтения, то память со строкой не освобождается!
+*	Удаляет буфер. Память со строкой не освобождается, делайте это вручную!
 *
 *	@param[in] buf Буфер
 *
-*	@return 1 - некорректный буфер на входе; 0 - все прошло нормально
+*	@return 0 - все прошло нормально
 */
 
 int BufDestructor(buf_t* buf) {
 	assert(buf != NULL);
 
-	if (buf->mode == 'r') {
 		buf->str = NULL;
 		buf->cursor = 0;
 		buf->size = 0;
 		buf->mode = 0;
 		buf->lastChar = 0;
-	}
-	else if (buf->mode == 'w') {
-		free(buf->str);
-		buf->cursor = 0;
-		buf->size = 0;
-		buf->mode = 0;
-		buf->lastChar = 0;
-	}
-	else {
-		return 1;
-	}
 
 	return 0;
 }
