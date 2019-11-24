@@ -212,7 +212,7 @@ int AkinatorCycle(node_t* curNode, node_t*& ansNode) {
 	}
 
 
-	printf("%s\n", curNode->value);
+	printf("%s?\n", curNode->value);
 
 	int ans = GetYesOrNo();
 
@@ -284,6 +284,11 @@ void InputQuestion(char* newQuest, const int questMaxSize) {
 		if (strstr(newQuest, " не ") || strstr(newQuest, "Не ")) {
 			printf("Нельзя вводить вопрос со словом \"не\". Введи другой вопрос:\n");
 			continue;
+		}
+		
+		int questLen = strlen(newQuest);
+		if (newQuest[questLen - 1] == '?') {
+			newQuest[questLen - 1] = '\0';
 		}
 
 		break;
@@ -406,7 +411,7 @@ int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
 
 	printf("\nВведи ответ на этот вопрос для твоего слова \"%s\" "
 	       "(для слова \"%s\" ответ должен быть противоположный):\n", newWord, oldAnsNode->value);
-	printf("%s\n", newQuest);
+	printf("%s?\n", newQuest);
 	int ansForNew = GetYesOrNo();
 
 	int err = AddWords(dataTree, oldAnsNode, newWord, newQuest, ansForNew);
@@ -595,7 +600,7 @@ int OutputSimilar(tree_t* dataTree, buf_t* way1, buf_t* way2, node_t*& firstDiff
 		default:
 			return 1;
 		}
-		printf("%s - %s\n", firstDifferent->parent->value, answer);
+		printf("%s. - %s\n", firstDifferent->parent->value, answer);
 
 		curCh1 = Bgetc(way1);
 		curCh2 = Bgetc(way2);
@@ -717,7 +722,7 @@ int OutputDefinition(tree_t* dataTree, buf_t* way) {
 		default:
 			return 1;
 		}
-		printf("%s - %s\n", curNode->parent->value, answer);
+		printf("%s. - %s\n", curNode->parent->value, answer);
 
 		curCh1 = Bgetc(way);
 	}
@@ -776,8 +781,8 @@ int DetermineWord(tree_t* dataTree) {
 
 int AdvancedCommandEntered() {
 	const int commMaxLen = 50;  ///<Максимальная длина команды. Должна соответствовать самим командам
-	const char definitionCommand[] = "определение";   ///<Показать дерево данных
-	const char compareCommand[] = "сравнение";  ///<Получть список доступных слов
+	const char definitionCommand[] = "определение";   ///<Показать определение слова
+	const char compareCommand[] = "сравнение";  ///<Сравнить два слова
 
 
 	char inp[commMaxLen + 1] = "";
