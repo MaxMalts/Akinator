@@ -29,42 +29,42 @@ enum extra_commands {
 *	Коды ошибок, возникающих при работе программы
 */
 
-enum Errors {
-	no_err,
-	undef_err,
-	invalid_data_format,
-	add_new_word_err,
-	add_old_word_err,
-	edit_old_node_err,
-	ansForNew_invalid,
-	code_from_tree_generation_err,
-	file_open_err,
-	file_write_err,
-	cannot_open_file,
-	create_words_array_err,
-	write_words_to_file_err,
-	invalid_way_format,
-	first_way_construct_err,
-	second_way_construct_err,
-	first_word_not_found,
-	second_word_not_found,
-	similar_output_err,
-	way_format_invalid,
-	create_way_to_word_err,
-	word_not_found,
-	output_definition_err,
-	open_data_file_err,
-	read_data_err,
-	new_word_add_err,
-	show_data_err,
-	write_available_words_err,
-	word_definition_err,
-	words_compare_err,
-	command_definition_err,
-	command_compare_err
+enum akinator_errors {
+	akinator_no_err,
+	akinator_undef_err,
+	akinator_invalid_data_format,
+	akinator_add_new_word_err,
+	akinator_add_old_word_err,
+	akinator_edit_old_node_err,
+	akinator_ansForNew_invalid,
+	akinator_code_from_tree_generation_err,
+	akinator_file_open_err,
+	akinator_file_write_err,
+	akinator_cannot_open_file,
+	akinator_create_words_array_err,
+	akinator_write_words_to_file_err,
+	akinator_invalid_way_format,
+	akinator_first_way_construct_err,
+	akinator_second_way_construct_err,
+	akinator_first_word_not_found,
+	akinator_second_word_not_found,
+	akinator_similar_output_err,
+	akinator_way_format_invalid,
+	akinator_create_way_to_word_err,
+	akinator_word_not_found,
+	akinator_output_definition_err,
+	akinator_open_data_file_err,
+	akinator_read_data_err,
+	akinator_new_word_add_err,
+	akinator_show_data_err,
+	akinator_write_available_words_err,
+	akinator_word_definition_err,
+	akinator_words_compare_err,
+	akinator_command_definition_err,
+	akinator_command_compare_err
 };
 
-Errors LastError = no_err;  ///<Последняя ошибка
+akinator_errors LastError = akinator_no_err;  ///<Последняя ошибка
 
 
 /**
@@ -141,7 +141,7 @@ int ScanNChars(char* buf, const char* formSpec, const int NChars) {
 	sprintf(format, "%%%s%ds", formSpec, NChars);
 	int err = scanf(format, buf);
 	if (err != 1 && err != 0) {
-		LastError = undef_err;
+		LastError = akinator_undef_err;
 		return 1;
 	}
 	fseek(stdin, 0, SEEK_END);
@@ -169,7 +169,7 @@ tree_t GetDataTree(FILE* dataFile) {
 	char* data = (char*)calloc(fileSize + 1, sizeof(char));
 	fread(data, sizeof(char), fileSize, dataFile);
 	if (strchr(data, '\n') != NULL) {
-		LastError = invalid_data_format;
+		LastError = akinator_invalid_data_format;
 		free(data);
 		return errTree;
 	}
@@ -178,7 +178,7 @@ tree_t GetDataTree(FILE* dataFile) {
 	tree_t dataTree = CodeToTree(data, "dataTree", &convErr);
 	free(data);
 	if (convErr != 0) {
-		LastError = invalid_data_format;
+		LastError = akinator_invalid_data_format;
 		TreeDestructor(&dataTree);
 		return errTree;
 	}
@@ -199,7 +199,7 @@ int ShowData(tree_t* dataTree) {
 	assert(dataTree != NULL);
 
 	if (ShowTree(dataTree) != 0) {
-		LastError = show_data_err;
+		LastError = akinator_show_data_err;
 		return 1;
 	}
 
@@ -371,34 +371,34 @@ int AddWords(tree_t* dataTree, node_t* oldAnsNode, char* newWord, char* newQuest
 	switch (ansForNew) {
 	case ANSWER_YES:
 		if (AddChild(dataTree, oldAnsNode, newWord, RIGHT_CHILD) != 0) {
-			LastError = add_new_word_err;
+			LastError = akinator_add_new_word_err;
 			return 1;
 		}
 		if (AddChild(dataTree, oldAnsNode, oldAnsNode->value, LEFT_CHILD) != 0) {
-			LastError = add_old_word_err;
+			LastError = akinator_add_old_word_err;
 			return 1;
 		}
 		if (ChangeNodeValue(oldAnsNode, newQuest) != 0) {
-			LastError = edit_old_node_err;
+			LastError = akinator_edit_old_node_err;
 			return 1;
 		}
 		break;
 	case ANSWER_NO:
 		if (AddChild(dataTree, oldAnsNode, newWord, LEFT_CHILD) != 0) {
-			LastError = add_new_word_err;
+			LastError = akinator_add_new_word_err;
 			return 1;
 		}
 		if (AddChild(dataTree, oldAnsNode, oldAnsNode->value, RIGHT_CHILD) != 0) {
-			LastError = add_old_word_err;
+			LastError = akinator_add_old_word_err;
 			return 1;
 		}
 		if (ChangeNodeValue(oldAnsNode, newQuest) != 0) {
-			LastError = edit_old_node_err;
+			LastError = akinator_edit_old_node_err;
 			return 1;
 		}
 		break;
 	default:
-		LastError = ansForNew_invalid;
+		LastError = akinator_ansForNew_invalid;
 		return 1;
 	}
 
@@ -422,17 +422,17 @@ int DataToFile(tree_t* dataTree, const char* dataFName) {
 	int dataSize = 0;
 	char* newData = TreeToCode(dataTree, &dataSize);
 	if (newData == NULL) {
-		LastError = code_from_tree_generation_err;
+		LastError = akinator_code_from_tree_generation_err;
 		return 1;
 	}
 
 	FILE* dataFile = fopen(dataFName, "w");
 	if (dataFile == NULL) {
-		LastError = file_open_err;
+		LastError = akinator_file_open_err;
 		return 1;
 	}
 	if (fwrite(newData, sizeof(char), dataSize, dataFile) != dataSize) {
-		LastError = file_write_err;
+		LastError = akinator_file_write_err;
 		return 1;
 	}
 
@@ -505,7 +505,7 @@ int WordsToFile(const char* foutName, char** words, const int NWords, const char
 
 	FILE* fout = fopen(foutName, "w");
 	if (fout == NULL) {
-		LastError = file_open_err;
+		LastError = akinator_file_open_err;
 		return 1;
 	}
 	for (int i = 0; i < NWords - 1; i++) {
@@ -535,12 +535,12 @@ int GetWords(tree_t* dataTree, const char* foutName="words.txt") {
 	char** words = NULL;
 	int NWords = 0;
 	if (LastNodesWords(dataTree, words, &NWords) != 0) {
-		LastError = create_words_array_err;
+		LastError = akinator_create_words_array_err;
 		return 1;
 	}
 
 	if (WordsToFile(foutName, words, NWords, "\n") != 0) {
-		LastError = write_words_to_file_err;
+		LastError = akinator_write_words_to_file_err;
 		return 1;
 	}
 
@@ -661,7 +661,7 @@ int OutputSimilar(tree_t* dataTree, buf_t* way1, buf_t* way2, node_t*& firstDiff
 			Bseek(way2, -1, SEEK_CUR);
 			return 0;
 		default:
-			LastError = invalid_way_format;
+			LastError = akinator_invalid_way_format;
 			return 1;
 		}
 		printf("%s. - %s\n", firstDifferent->parent->value, answer);
@@ -700,12 +700,12 @@ int CompareWords(tree_t* dataTree) {
 	char* way1 = FindNodeByValue(dataTree, &word1, tempNode, &err);
 	if (way1 == NULL) {
 		if (err == 1) {
-			LastError = first_way_construct_err;
+			LastError = akinator_first_way_construct_err;
 			return 1;
 		}
 		if (err == 2) {
 			printf("\nПервое слово не найдено.\n");
-			LastError = first_word_not_found;
+			LastError = akinator_first_word_not_found;
 			return 1;
 		}
 	}
@@ -713,12 +713,12 @@ int CompareWords(tree_t* dataTree) {
 	char* way2 = FindNodeByValue(dataTree, &word2, tempNode, &err);
 	if (way2 == NULL) {
 		if (err == 1) {
-			LastError = second_way_construct_err;
+			LastError = akinator_second_way_construct_err;
 			return 1;
 		}
 		if (err == 2) {
 			printf("\nВторое слово не найдено.\n");
-			LastError = second_word_not_found;
+			LastError = akinator_second_word_not_found;
 			return 1;
 		}
 	}
@@ -730,7 +730,7 @@ int CompareWords(tree_t* dataTree) {
 
 	node_t* firstDifferent = NULL;
 	if (OutputSimilar(dataTree, &way1Buf, &way2Buf, firstDifferent) != 0) {
-		LastError = similar_output_err;
+		LastError = akinator_similar_output_err;
 		return 1;
 	}
 	
@@ -791,7 +791,7 @@ int OutputDefinition(tree_t* dataTree, buf_t* way) {
 			curNode = curNode->right;
 			break;
 		default:
-			LastError = invalid_way_format;
+			LastError = akinator_invalid_way_format;
 			return 1;
 		}
 		printf("%s. - %s\n", curNode->parent->value, answer);
@@ -823,12 +823,12 @@ int DetermineWord(tree_t* dataTree) {
 	char* way = FindNodeByValue(dataTree, &word, tempNode, &err);
 	if (way == NULL) {
 		if (err == 1) {
-			LastError = create_way_to_word_err;
+			LastError = akinator_create_way_to_word_err;
 			return 1;
 		}
 		if (err == 2) {
 			printf("\nCлово не найдено.\n");
-			LastError = word_not_found;
+			LastError = akinator_word_not_found;
 			return 1;
 		}
 	}
@@ -838,7 +838,7 @@ int DetermineWord(tree_t* dataTree) {
 	printf("\nОпределение:\n");
 
 	if (OutputDefinition(dataTree, &wayBuf) != 0) {
-		LastError = output_definition_err;
+		LastError = akinator_output_definition_err;
 		return 1;
 	}
 
@@ -893,14 +893,14 @@ int AdvancedCommand(tree_t* dataTree) {
 	case command_definition:
 		if (DetermineWord(dataTree) != 0) {
 			printf("Ошибка при определении слова.\n");
-			LastError = command_definition_err;
+			LastError = akinator_command_definition_err;
 			return -1;
 		}
 		return 1;
 	case command_compare:
 		if (CompareWords(dataTree) == 1) {
 			printf("\nОшибка при сравнении слов.\n");
-			LastError = command_compare_err;
+			LastError = akinator_command_compare_err;
 			return -1;
 		}
 		return 1;
@@ -923,7 +923,7 @@ int StartAkinator(const char* dataFName = "data.bts") {
 	FILE* dataFile = GetDataFile(dataFName);
 	if (dataFile == NULL) {
 		printf("\n\nОшибка при загрузке данных: невозможно открыть файл с данными\n");
-		LastError = open_data_file_err;
+		LastError = akinator_open_data_file_err;
 		return 1;
 	}
 
@@ -932,7 +932,7 @@ int StartAkinator(const char* dataFName = "data.bts") {
 	fclose(dataFile);
 	if (dataTree.size == 0) {
 		printf("\n\nОшибка при загрузке данных: невозможно прочитать данные\n");
-		LastError = read_data_err;
+		LastError = akinator_read_data_err;
 		return 1;
 	}
 	
@@ -953,12 +953,12 @@ int StartAkinator(const char* dataFName = "data.bts") {
 			continue;
 		}
 		if (ret < 0){
-			if (LastError == command_definition_err) {
-				LastError = word_definition_err;
+			if (LastError == akinator_command_definition_err) {
+				LastError = akinator_word_definition_err;
 				return 1;
 			}
-			else if (LastError == command_compare_err) {
-				LastError = words_compare_err;
+			else if (LastError == akinator_command_compare_err) {
+				LastError = akinator_words_compare_err;
 				return 1;
 			}
 		}
@@ -972,11 +972,11 @@ int StartAkinator(const char* dataFName = "data.bts") {
 		}
 		if (ret < 0){
 			if (LastError == command_data_err) {
-				LastError = show_data_err;
+				LastError = akinator_show_data_err;
 				return 1;
 			}
 			else if (LastError == command_words_err) {
-				LastError = write_available_words_err;
+				LastError = akinator_write_available_words_err;
 				return 1;
 			}
 		}
@@ -989,7 +989,7 @@ int StartAkinator(const char* dataFName = "data.bts") {
 		if (!guessed) {
 			if (AddQuestion(&dataTree, ansNode, dataFName) != 0) {
 				printf("Ошибка при добавлении нового слова. %d\n", LastError);
-				LastError = add_new_word_err;
+				LastError = akinator_add_new_word_err;
 				return 1;
 			}
 			else {
