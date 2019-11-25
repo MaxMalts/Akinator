@@ -11,6 +11,11 @@
 #define ANSWER_YES 1
 #define ANSWER_NO 0
 
+
+/**
+*	Другие команды
+*/
+
 enum extra_commands {
 	no_command,
 	command_data,
@@ -20,10 +25,46 @@ enum extra_commands {
 };
 
 
-enum common_errors {
+/**
+*	Коды ошибок, возникающих при работе программы
+*/
+
+enum Errors {
 	no_err,
-	is_err
+	undef_err,
+	invalid_data_format,
+	add_new_word_err,
+	add_old_word_err,
+	edit_old_node_err,
+	ansForNew_invalid,
+	code_from_tree_generation_err,
+	file_open_err,
+	file_write_err,
+	cannot_open_file,
+	create_words_array_err,
+	write_words_to_file_err,
+	invalid_way_format,
+	first_way_construct_err,
+	second_way_construct_err,
+	first_word_not_found,
+	second_word_not_found,
+	similar_output_err,
+	way_format_invalid,
+	create_way_to_word_err,
+	word_not_found,
+	output_definition_err,
+	open_data_file_err,
+	read_data_err,
+	new_word_add_err,
+	show_data_err,
+	write_available_words_err,
+	word_definition_err,
+	words_compare_err,
+	command_definition_err,
+	command_compare_err
 };
+
+Errors LastError = no_err;  ///<Последняя ошибка
 
 
 /**
@@ -41,6 +82,7 @@ int IsUpperRus(char ch) {
 
 	return 0;
 }
+
 
 /**
 *	Открывает файл с данными
@@ -99,11 +141,12 @@ int ScanNChars(char* buf, const char* formSpec, const int NChars) {
 	sprintf(format, "%%%s%ds", formSpec, NChars);
 	int err = scanf(format, buf);
 	if (err != 1 && err != 0) {
-		return is_err;
+		LastError = undef_err;
+		return 1;
 	}
 	fseek(stdin, 0, SEEK_END);
 
-	return no_err;
+	return 0;
 }
 
 
@@ -111,16 +154,11 @@ int ScanNChars(char* buf, const char* formSpec, const int NChars) {
 *	Создает дерево с данными из файла
 *
 *	@param[in] dataFile Файл
-*	@param[out] err Код ошибки: 1 - неверный формат данных; 0 - все прошло нормально
 *
 *	@return Дерево с данными. В случае ошибки возвращается пустое дерево.
 */
 
-enum GetDataTree_errs {
-	invalid_data_format
-};
-
-tree_t GetDataTree(FILE* dataFile, int* err = NULL) {
+tree_t GetDataTree(FILE* dataFile) {
 	assert(dataFile != NULL);
 
 	tree_t errTree = TreeConstructor("errTree");
@@ -131,9 +169,7 @@ tree_t GetDataTree(FILE* dataFile, int* err = NULL) {
 	char* data = (char*)calloc(fileSize + 1, sizeof(char));
 	fread(data, sizeof(char), fileSize, dataFile);
 	if (strchr(data, '\n') != NULL) {
-		if (err != NULL) {
-			*err = invalid_data_format;
-		}
+		LastError = invalid_data_format;
 		free(data);
 		return errTree;
 	}
@@ -142,16 +178,11 @@ tree_t GetDataTree(FILE* dataFile, int* err = NULL) {
 	tree_t dataTree = CodeToTree(data, "dataTree", &convErr);
 	free(data);
 	if (convErr != 0) {
-		if (err != NULL) {
-			*err = invalid_data_format;
-		}
+		LastError = invalid_data_format;
 		TreeDestructor(&dataTree);
 		return errTree;
 	}
 
-	if (err != NULL) {
-		*err = no_err;
-	}
 	return dataTree;
 }
 
@@ -168,10 +199,11 @@ int ShowData(tree_t* dataTree) {
 	assert(dataTree != NULL);
 
 	if (ShowTree(dataTree) != 0) {
-		return is_err;
+		LastError = show_data_err;
+		return 1;
 	}
 
-	return no_err;
+	return 0;
 }
 
 
@@ -327,17 +359,8 @@ void InputQuestion(char* newQuest, const int questMaxSize) {
 *	@param newQuest Новый вопрос
 *	@param ansForNew Ответ на новый вопрос для нового слова (ANSWER_YES или ANSWER_NO)
 *
-*	@return 1 - не удалось добавить новое слово; 2 - не удалось добавить старое слово;\
- 3 - не удалось изменить значение старого узла на вопрос; 4 - некорректное значение ansForNew;\
- 0 - все прошло нормально
+*	@return 1 - ошибка; 0 - все прошло нормально
 */
-
-enum AddWords_errs {
-	add_new_word_err,
-	add_old_word_err,
-	edit_old_node_err,
-	ansForNew_invalid,
-};
 
 int AddWords(tree_t* dataTree, node_t* oldAnsNode, char* newWord, char* newQuest, const int ansForNew) {
 	assert(dataTree != NULL);
@@ -348,30 +371,38 @@ int AddWords(tree_t* dataTree, node_t* oldAnsNode, char* newWord, char* newQuest
 	switch (ansForNew) {
 	case ANSWER_YES:
 		if (AddChild(dataTree, oldAnsNode, newWord, RIGHT_CHILD) != 0) {
-			return add_new_word_err;
+			LastError = add_new_word_err;
+			return 1;
 		}
 		if (AddChild(dataTree, oldAnsNode, oldAnsNode->value, LEFT_CHILD) != 0) {
-			return add_old_word_err;
+			LastError = add_old_word_err;
+			return 1;
 		}
 		if (ChangeNodeValue(oldAnsNode, newQuest) != 0) {
-			return edit_old_node_err;
+			LastError = edit_old_node_err;
+			return 1;
 		}
 		break;
 	case ANSWER_NO:
 		if (AddChild(dataTree, oldAnsNode, newWord, LEFT_CHILD) != 0) {
-			return add_new_word_err;
+			LastError = add_new_word_err;
+			return 1;
 		}
 		if (AddChild(dataTree, oldAnsNode, oldAnsNode->value, RIGHT_CHILD) != 0) {
-			return add_old_word_err;
+			LastError = add_old_word_err;
+			return 1;
 		}
 		if (ChangeNodeValue(oldAnsNode, newQuest) != 0) {
-			return edit_old_node_err;
+			LastError = edit_old_node_err;
+			return 1;
 		}
 		break;
 	default:
-		return ansForNew_invalid;
+		LastError = ansForNew_invalid;
+		return 1;
 	}
-	return no_err;
+
+	return 0;
 }
 
 
@@ -381,15 +412,8 @@ int AddWords(tree_t* dataTree, node_t* oldAnsNode, char* newWord, char* newQuest
 *	@param[in] dataTree Дерево с данными
 *	@param[in] dataFName Имя файла для записи
 *
-*	@return 1 - проблема при генерации кода по дереву; 2 - проблема при открытии файла;\
- 3 - проблема при записи в файл; 0 - все прошло нормально
+*	@return 1 - ошибка; 0 - все прошло нормально
 */
-
-enum DataToFile_errs {
-	code_from_tree_generation_err,
-	file_open_err,
-	file_write_err,
-};
 
 int DataToFile(tree_t* dataTree, const char* dataFName) {
 	assert(dataTree != NULL);
@@ -398,20 +422,23 @@ int DataToFile(tree_t* dataTree, const char* dataFName) {
 	int dataSize = 0;
 	char* newData = TreeToCode(dataTree, &dataSize);
 	if (newData == NULL) {
-		return code_from_tree_generation_err;
+		LastError = code_from_tree_generation_err;
+		return 1;
 	}
 
 	FILE* dataFile = fopen(dataFName, "w");
 	if (dataFile == NULL) {
-		return file_open_err;
+		LastError = file_open_err;
+		return 1;
 	}
 	if (fwrite(newData, sizeof(char), dataSize, dataFile) != dataSize) {
-		return file_write_err;
+		LastError = file_write_err;
+		return 1;
 	}
 
 	fclose(dataFile);
 	free(newData);
-	return no_err;
+	return 0;
 }
 
 
@@ -422,9 +449,7 @@ int DataToFile(tree_t* dataTree, const char* dataFName) {
 *	@param oldAnsNode Узел со старым словом
 *	@param[in] dataFName Имя файла с данными
 *
-*	@return Возвращает ошибку. Если в разряде десятков 0, то произошла ошибка в функции AddWords();\
- если в разряде десятков 1, то в функции DataToFile. Соответствующие коды ошибок стоят в разряде единиц,\
- их смотри в соответствующих функциях.
+*	@return 1 - ошибка; 0 - все прошло нормально
 */
 
 int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
@@ -449,14 +474,12 @@ int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
 	printf("%s?\n", newQuest);
 	int ansForNew = GetYesOrNo();
 
-	int err = AddWords(dataTree, oldAnsNode, newWord, newQuest, ansForNew);
-	if (err != 0) {
-		return err;
+	if (AddWords(dataTree, oldAnsNode, newWord, newQuest, ansForNew) != 0) {
+		return 1;
 	}
 
-	err = DataToFile(dataTree, dataFName);
-	if (err != 0) {
-		return 10 + err;
+	if (DataToFile(dataTree, dataFName) != 0) {
+		return 1;
 	}
 
 	return 0;
@@ -471,12 +494,8 @@ int AddQuestion(tree_t* dataTree, node_t* oldAnsNode, const char* dataFName) {
 *	@param[in] NWords Количество строк
 *	@param[in] separator Разделитель между словами
 *
-*	@return 1 - не удалось открыть файл; 0 - все прошло нормально
+*	@return 1 - ошибка; 0 - все прошло нормально
 */
-
-enum WordsToFile_errs {
-	cannot_open_file,
-};
 
 int WordsToFile(const char* foutName, char** words, const int NWords, const char* separator) {
 	assert(foutName != NULL);
@@ -486,7 +505,8 @@ int WordsToFile(const char* foutName, char** words, const int NWords, const char
 
 	FILE* fout = fopen(foutName, "w");
 	if (fout == NULL) {
-		return file_open_err;
+		LastError = file_open_err;
+		return 1;
 	}
 	for (int i = 0; i < NWords - 1; i++) {
 		fprintf(fout, "%s", words[i]);
@@ -495,7 +515,7 @@ int WordsToFile(const char* foutName, char** words, const int NWords, const char
 	fprintf(fout, "%s", words[NWords - 1]);
 	fclose(fout);
 
-	return no_err;
+	return 0;
 }
 
 
@@ -505,14 +525,8 @@ int WordsToFile(const char* foutName, char** words, const int NWords, const char
 *	@param[in] dataTree Дерево данных
 *	@param[in] foutName Имя выходного файла
 *
-*	@return 1 - ошибка при создании массива слов; 2 - ошибка при записи слов в файл;\
- 0 - все прошло нормально
+*	@return 1 - ошибка; 0 - все прошло нормально
 */
-
-enum GetWords_errs {
-	create_words_array_err,
-	write_words_to_file_err
-};
 
 int GetWords(tree_t* dataTree, const char* foutName="words.txt") {
 	assert(dataTree != NULL);
@@ -521,11 +535,13 @@ int GetWords(tree_t* dataTree, const char* foutName="words.txt") {
 	char** words = NULL;
 	int NWords = 0;
 	if (LastNodesWords(dataTree, words, &NWords) != 0) {
-		return create_words_array_err;
+		LastError = create_words_array_err;
+		return 1;
 	}
 
 	if (WordsToFile(foutName, words, NWords, "\n") != 0) {
-		return write_words_to_file_err;
+		LastError = write_words_to_file_err;
+		return 1;
 	}
 
 	for (int i = 0; i < NWords; i++) {
@@ -533,7 +549,7 @@ int GetWords(tree_t* dataTree, const char* foutName="words.txt") {
 	}
 	free(words);
 
-	return no_err;
+	return 0;
 }
 
 
@@ -571,9 +587,7 @@ int SecretCommandEntered() {
 *	@param[in] dataTree Дерево данных
 *
 *	@return 1 (true) - команда была введена и успешно выполнена;\
- 0 (false) - команда не была введена; -1 - была введена команда command_data,\
- но возникла ошибка при выполнении; -2 - была введена команда command_words,\
- но возникла ошибка при выполнении;
+ 0 (false) - команда не была введена; -1 - ошибка
 */
 
 enum SecretCommand_errs {
@@ -599,7 +613,7 @@ int SecretCommand(tree_t* dataTree) {
 		printf("\n");
 		if (GetWords(dataTree, fName) != 0) {
 			printf("\nОшибка при получении доступных слов.\n");
-			return -2;
+			return -1;
 		}
 		printf("\nЗаписано успешно в %s\n", fName);
 		return 1;
@@ -617,12 +631,8 @@ int SecretCommand(tree_t* dataTree) {
 *	@prarm[in] way2 Путь до второго слова
 *	@prarm[out] firstDifferent Первый узел с необщим признаком
 *
-*	@return 1 - неверный формат пути; 0 - все прошло нормально
+*	@return 1 - ошибка; 0 - все прошло нормально
 */
-
-enum OutputSimilar_errs {
-	invalid_way_format
-};
 
 int OutputSimilar(tree_t* dataTree, buf_t* way1, buf_t* way2, node_t*& firstDifferent) {
 	assert(dataTree != NULL);
@@ -651,6 +661,7 @@ int OutputSimilar(tree_t* dataTree, buf_t* way1, buf_t* way2, node_t*& firstDiff
 			Bseek(way2, -1, SEEK_CUR);
 			return 0;
 		default:
+			LastError = invalid_way_format;
 			return 1;
 		}
 		printf("%s. - %s\n", firstDifferent->parent->value, answer);
@@ -670,18 +681,8 @@ int OutputSimilar(tree_t* dataTree, buf_t* way1, buf_t* way2, node_t*& firstDiff
 *
 *	@param[in] dataTree
 *
-*	@return 1 (3) - ошибка при построении пути до первого (второго) слова;\
- 2 (4) - первое (второе) слово не найдено; 5 - ошибка при выводе одинаковых признаков;\
- 0 - все прошло нормально
+*	@return 1 - ошибка ; 0 - все прошло нормально
 */
-
-enum CompareWords_errs {
-	first_way_construct_err,
-	second_way_construct_err,
-	first_word_not_found,
-	second_word_not_found,
-	similar_output_err
-};
 
 int CompareWords(tree_t* dataTree) {
 	assert(dataTree != NULL);
@@ -699,22 +700,26 @@ int CompareWords(tree_t* dataTree) {
 	char* way1 = FindNodeByValue(dataTree, &word1, tempNode, &err);
 	if (way1 == NULL) {
 		if (err == 1) {
-			return first_way_construct_err;
+			LastError = first_way_construct_err;
+			return 1;
 		}
 		if (err == 2) {
 			printf("\nПервое слово не найдено.\n");
-			return first_word_not_found;
+			LastError = first_word_not_found;
+			return 1;
 		}
 	}
 
 	char* way2 = FindNodeByValue(dataTree, &word2, tempNode, &err);
 	if (way2 == NULL) {
 		if (err == 1) {
-			return second_way_construct_err;
+			LastError = second_way_construct_err;
+			return 1;
 		}
 		if (err == 2) {
 			printf("\nВторое слово не найдено.\n");
-			return second_word_not_found;
+			LastError = second_word_not_found;
+			return 1;
 		}
 	}
 
@@ -725,7 +730,8 @@ int CompareWords(tree_t* dataTree) {
 
 	node_t* firstDifferent = NULL;
 	if (OutputSimilar(dataTree, &way1Buf, &way2Buf, firstDifferent) != 0) {
-		return similar_output_err;
+		LastError = similar_output_err;
+		return 1;
 	}
 	
 	printf("\nРазличие:\n");
@@ -752,7 +758,7 @@ int CompareWords(tree_t* dataTree) {
 	free(way2);
 	BufDestructor(&way1Buf);
 	BufDestructor(&way2Buf);
-	return no_err;
+	return 0;
 }
 
 
@@ -762,12 +768,8 @@ int CompareWords(tree_t* dataTree) {
 *	@param[in] dataTree Дерево данных
 *	@prarm[in] way Путь до слова
 *
-*	@return 1 - неверный формат пути; 0 - все прошло нормально
+*	@return 1 - ошибка; 0 - все прошло нормально
 */
-
-enum OutputDefinition_errs {
-	way_format_invalid
-};
 
 int OutputDefinition(tree_t* dataTree, buf_t* way) {
 	assert(dataTree != NULL);
@@ -789,14 +791,15 @@ int OutputDefinition(tree_t* dataTree, buf_t* way) {
 			curNode = curNode->right;
 			break;
 		default:
-			return invalid_way_format;
+			LastError = invalid_way_format;
+			return 1;
 		}
 		printf("%s. - %s\n", curNode->parent->value, answer);
 
 		curCh1 = Bgetc(way);
 	}
 
-	return no_err;
+	return 0;
 }
 
 
@@ -805,15 +808,8 @@ int OutputDefinition(tree_t* dataTree, buf_t* way) {
 *
 *	@param[in] dataTree
 *
-*	@return 1 - ошибка при построении пути до слова; 2 - слово не найдено;\
- 3 - ошибка при выводе определения; 0 - все прошло нормально
+*	@return 1 - ошибка; 0 - все прошло нормально
 */
-
-enum DetermineWord_errs {
-	create_way_to_word_err,
-	word_not_found,
-	output_definition_err
-};
 
 int DetermineWord(tree_t* dataTree) {
 	assert(dataTree != NULL);
@@ -827,11 +823,13 @@ int DetermineWord(tree_t* dataTree) {
 	char* way = FindNodeByValue(dataTree, &word, tempNode, &err);
 	if (way == NULL) {
 		if (err == 1) {
-			return create_way_to_word_err;
+			LastError = create_way_to_word_err;
+			return 1;
 		}
 		if (err == 2) {
 			printf("\nCлово не найдено.\n");
-			return word_not_found;
+			LastError = word_not_found;
+			return 1;
 		}
 	}
 
@@ -840,12 +838,13 @@ int DetermineWord(tree_t* dataTree) {
 	printf("\nОпределение:\n");
 
 	if (OutputDefinition(dataTree, &wayBuf) != 0) {
-		return output_definition_err;
+		LastError = output_definition_err;
+		return 1;
 	}
 
 	free(way);
 	BufDestructor(&wayBuf);
-	return no_err;
+	return 0;
 }
 
 
@@ -853,7 +852,7 @@ int DetermineWord(tree_t* dataTree) {
 *	Считывает ввод и определяет, какую дополнительную команду ввел пользователь
 *
 *	@return command_definition - определение слова;\
- command_compare - сравнение слов; 0 - дополнительная команда не введена
+ command_compare - сравнение слов; no_command - дополнительная команда не введена
 */
 
 int AdvancedCommandEntered() {
@@ -873,7 +872,7 @@ int AdvancedCommandEntered() {
 		return command_compare;
 	}
 
-	return 0;
+	return no_command;
 }
 
 
@@ -883,15 +882,8 @@ int AdvancedCommandEntered() {
 *	@param[in] dataTree Дерево данных
 *
 *	@return 1 (true) - команда была введена и успешно выполнена;\
- 0 (false) - команда не была введена; -1 - была введена команда command_definition,\
- но возникла ошибка при выполнении; -2 - была введена команда command_compare,\
- но возникла ошибка при выполнении;
+ 0 (false) - команда не была введена; -1 - ошибка
 */
-
-enum AdvancedCommand_errs {
-	command_definition_err = -1,
-	command_compare_err = -2
-};
 
 int AdvancedCommand(tree_t* dataTree) {
 	assert(dataTree != NULL);
@@ -901,13 +893,15 @@ int AdvancedCommand(tree_t* dataTree) {
 	case command_definition:
 		if (DetermineWord(dataTree) != 0) {
 			printf("Ошибка при определении слова.\n");
-			return command_definition_err;
+			LastError = command_definition_err;
+			return -1;
 		}
 		return 1;
 	case command_compare:
 		if (CompareWords(dataTree) == 1) {
 			printf("\nОшибка при сравнении слов.\n");
-			return command_compare_err;
+			LastError = command_compare_err;
+			return -1;
 		}
 		return 1;
 	}
@@ -919,21 +913,8 @@ int AdvancedCommand(tree_t* dataTree) {
 /**
 *	Главная функция игры
 *
-*	@return 1 - ошибка при открытии файла с данными; 2 - ошибка при чтении данных;\
- 3 - ошибка при добавлении нового слова; 4 - ошибка при показе дерева данных;\
- 5 - ошибка при записи доступных слов; 6 - ошибка при определении слова;\
- 7 - ошибка при сравнении слов; 0 - все прошло нормально
+*	@return 1 - ошибка; 0 - все прошло нормально
 */
-
-enum StartAkinator_errs {
-	open_data_file_err,
-	read_data_err,
-	new_word_add_err,
-	show_data_err,
-	write_available_words_err,
-	word_definition_err,
-	words_compare_err,
-};
 
 int StartAkinator(const char* dataFName = "data.bts") {
 
@@ -942,15 +923,17 @@ int StartAkinator(const char* dataFName = "data.bts") {
 	FILE* dataFile = GetDataFile(dataFName);
 	if (dataFile == NULL) {
 		printf("\n\nОшибка при загрузке данных: невозможно открыть файл с данными\n");
-		return open_data_file_err;
+		LastError = open_data_file_err;
+		return 1;
 	}
 
 	int err = 0;
-	tree_t dataTree = GetDataTree(dataFile, &err);
+	tree_t dataTree = GetDataTree(dataFile);
 	fclose(dataFile);
-	if (err != 0) {
+	if (dataTree.size == 0) {
 		printf("\n\nОшибка при загрузке данных: невозможно прочитать данные\n");
-		return read_data_err;
+		LastError = read_data_err;
+		return 1;
 	}
 	
 
@@ -964,47 +947,50 @@ int StartAkinator(const char* dataFName = "data.bts") {
 			"Чтобы получить определение, введи \"определение\", чтобы сравнить - \"сравнение\", "
 			"чтобы продолжить, нажми enter:\n");
 
-		err = AdvancedCommand(&dataTree);
-		if (err > 0) {
+		int ret = AdvancedCommand(&dataTree);
+		if (ret > 0) {
 			printf("\n\n");
 			continue;
 		}
-		if (err == command_definition_err) {
-			return word_definition_err;
-		}
-		if (err == command_compare_err) {
-			return words_compare_err;
-		}
-		if (err < -2) {
-			assert(0);
+		if (ret < 0){
+			if (LastError == command_definition_err) {
+				LastError = word_definition_err;
+				return 1;
+			}
+			else if (LastError == command_compare_err) {
+				LastError = words_compare_err;
+				return 1;
+			}
 		}
 
 		printf("Давай играть! Если готов, нажми enter.\n");
 
-		err = SecretCommand(&dataTree);
-		if (err > 0) {
+		ret = SecretCommand(&dataTree);
+		if (ret > 0) {
 			printf("\n");
 			continue;
 		}
-		if (err == command_data_err) {
-			return show_data_err;
+		if (ret < 0){
+			if (LastError == command_data_err) {
+				LastError = show_data_err;
+				return 1;
+			}
+			else if (LastError == command_words_err) {
+				LastError = write_available_words_err;
+				return 1;
+			}
 		}
-		if (err == command_words_err) {
-			return write_available_words_err;
-		}
-		if (err < -2) {
-			assert(0);
-		}
+
 
 		node_t* ansNode = NULL;
 		int guessed = AkinatorCycle(dataTree.root, ansNode);
 		printf("\n");
 
 		if (!guessed) {
-			int TErr = AddQuestion(&dataTree, ansNode, dataFName);
-			if (TErr != 0) {
-				printf("Ошибка при добавлении нового слова. %d\n", TErr);
-				return add_new_word_err;
+			if (AddQuestion(&dataTree, ansNode, dataFName) != 0) {
+				printf("Ошибка при добавлении нового слова. %d\n", LastError);
+				LastError = add_new_word_err;
+				return 1;
 			}
 			else {
 				printf("Слово добавлено.\n\n");
@@ -1020,7 +1006,7 @@ int StartAkinator(const char* dataFName = "data.bts") {
 
 	printf("Пока!");
 
-	return no_err;
+	return 0;
 }
 
 int main() {
