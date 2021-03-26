@@ -6,12 +6,12 @@ This is a game that guesses your words.
 
 The whole gameplay is explained while playing. You just need to follow the instructions after you start the game.
 
-1. When you start the game, it offers you to ask for the word definition or comparison of two words. If you want this, you can type "определение" and "сравнение" respectively. If you don't want this and want to play, just hit enter.
-2. Make a word and hit enter. The game will ask you questions about this work, and you should answer them by "да" or "нет".
+1. When you start the game, it offers you to ask for the word definition or comparison of two words. If you want this, you can type "РѕРїСЂРµРґРµР»РµРЅРёРµ" and "СЃСЂР°РІРЅРµРЅРёРµ" respectively. If you don't want this and want to play, just hit enter.
+2. Make a word and hit enter. The game will ask you questions about this work, and you should answer them by "РґР°" or "РЅРµС‚".
 3. If you answered correctly, the game will guess your word.
 4. It can be possible that the game doesn't know your word and do not guess it. In this case the game will prompt you to type this word, and it will be guessed next time.
 
-There are two secret commands --- "show_data" and "get_words" which show you the data in a tree view and print you all the known words. You need to type these commands after the "Давай играть! Если готов, нажми enter." message.
+There are two secret commands &mdash; "show_data" and "get_words" which show you the data in a tree view and print you all the known words. You need to type these commands after the "Р”Р°РІР°Р№ РёРіСЂР°С‚СЊ! Р•СЃР»Рё РіРѕС‚РѕРІ, РЅР°Р¶РјРё enter." message.
 
 ## Installation
 
