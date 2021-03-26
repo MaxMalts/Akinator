@@ -15,8 +15,8 @@ There are two secret commands &mdash; "show_data" and "get_words" which show you
 
 ## Installation
 
-You can download the game from [Releases]{https://github.com/MaxMalts/Akinator/releases} section.
+You can download the game from [Releases](https://github.com/MaxMalts/Akinator/releases) section.
 
-For the game to work correctly you need to install [Graphviz]{https://graphviz.org/download/#windows}. Make sure that dot.exe is added to PATH.
+For the game to work correctly you need to install [Graphviz](https://graphviz.org/download/#windows). Make sure that dot.exe is added to PATH.
 
 System requirements: Windows 10 x64.
